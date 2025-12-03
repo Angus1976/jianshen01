@@ -21,7 +21,7 @@ const Login = () => {
       const res = await post<{
         token: string;
         adminInfo: any;
-      }>('/admin/auth/login', values);
+      }>('/auth/login', values);
 
       login({
         token: res.token,
