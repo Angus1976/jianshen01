@@ -1,0 +1,18 @@
+{
+  "version": "2.0",
+  "envId": "{{env.TCB_ENV_ID}}",
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "framework": {
+    "name": "rocketbird-admin",
+    "plugins": {
+      "client": {
+        "use": "@cloudbase/framework-plugin-website",
+        "inputs": {
+          "outputPath": "dist",
+          "cloudPath": "/admin",
+          "ignore": [".git", ".github", "node_modules"]
+        }
+      }
+    }
+  }
+}

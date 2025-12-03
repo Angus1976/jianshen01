@@ -1,0 +1,27 @@
+{
+  "version": "2.0",
+  "envId": "{{env.TCB_ENV_ID}}",
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "framework": {
+    "name": "rocketbird-server",
+    "plugins": {
+      "function": {
+        "use": "@cloudbase/framework-plugin-function",
+        "inputs": {
+          "functions": [
+            {
+              "name": "api",
+              "runtime": "Nodejs18.15",
+              "entry": "app.js",
+              "memory": 256,
+              "timeout": 60,
+              "handler": "app.main",
+              "installDependency": true,
+              "path": "/api"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
