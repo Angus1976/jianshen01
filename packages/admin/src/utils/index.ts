@@ -3,7 +3,7 @@ export * from './request';
 /**
  * 格式化日期
  */
-export const formatDate = (date: string | Date, format = 'YYYY-MM-DD HH:mm:ss') => {
+export const formatDate = (date: string | Date | undefined | null, format = 'YYYY-MM-DD HH:mm:ss') => {
   if (!date) return '-';
   const d = new Date(date);
   const year = d.getFullYear();

@@ -17,7 +17,10 @@ async function seedAdmin() {
   const bcrypt = bcryptModule.default;
   const { v4: uuid } = await import('uuid');
   const { connectDatabase } = await import('../config/database');
-  const { AdminUser, AdminRole } = await import('../models/admin.model');
+  const adminModel = await import('../models/admin.model');
+  // 使用类型断言确保类型正确
+  const AdminUser = adminModel.AdminUser as typeof adminModel.AdminUser;
+  const AdminRole = adminModel.AdminRole as typeof adminModel.AdminRole;
 
   try {
     // 初始化 TCB
@@ -25,8 +28,8 @@ async function seedAdmin() {
     console.log('TCB 数据库连接成功');
 
     // 确保集合存在
-    await AdminRole.ensureCollection();
-    await AdminUser.ensureCollection();
+    await (AdminRole as any).ensureCollection();
+    await (AdminUser as any).ensureCollection();
 
     // 检查是否已存在超级管理员角色
     let superAdminRole = await AdminRole.findByCode('super_admin');
