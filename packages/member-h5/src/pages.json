@@ -101,6 +101,12 @@
       "style": {
         "navigationBarTitleText": "登录"
       }
+    },
+    {
+      "path": "pages/forgot-password/index",
+      "style": {
+        "navigationBarTitleText": "忘记密码"
+      }
     }
   ],
   "globalStyle": {
@@ -117,26 +123,26 @@
     "list": [
       {
         "pagePath": "pages/home/index",
-        "iconPath": "static/tabbar/home.png",
-        "selectedIconPath": "static/tabbar/home-active.png",
+        "iconPath": "static/tabbar/home.svg",
+        "selectedIconPath": "static/tabbar/home-active.svg",
         "text": "首页"
       },
       {
         "pagePath": "pages/points/index",
-        "iconPath": "static/tabbar/points.png",
-        "selectedIconPath": "static/tabbar/points-active.png",
+        "iconPath": "static/tabbar/points.svg",
+        "selectedIconPath": "static/tabbar/points-active.svg",
         "text": "积分"
       },
       {
         "pagePath": "pages/checkin/index",
-        "iconPath": "static/tabbar/checkin.png",
-        "selectedIconPath": "static/tabbar/checkin-active.png",
+        "iconPath": "static/tabbar/checkin.svg",
+        "selectedIconPath": "static/tabbar/checkin-active.svg",
         "text": "打卡"
       },
       {
         "pagePath": "pages/mine/index",
-        "iconPath": "static/tabbar/mine.png",
-        "selectedIconPath": "static/tabbar/mine-active.png",
+        "iconPath": "static/tabbar/mine.svg",
+        "selectedIconPath": "static/tabbar/mine-active.svg",
         "text": "我的"
       }
     ]

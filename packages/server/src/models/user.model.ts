@@ -7,6 +7,7 @@ export interface IUser {
   openId: string;
   unionId?: string;
   phone?: string;
+  password?: string; // 密码 (bcrypt 加密)
   nickname: string;
   avatar: string;
   gender: number; // 0未知 1男 2女
@@ -20,7 +21,7 @@ export interface IUser {
   availablePoints: number;
   inviteCode: string;
   invitedBy?: string;
-  registerSource: string;
+  registerSource: string; // wechat/wechat_h5/sms/password
   status: number; // 0禁用 1正常
   lastLoginAt: Date;
   createdAt?: Date;

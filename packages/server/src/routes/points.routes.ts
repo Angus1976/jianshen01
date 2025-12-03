@@ -50,11 +50,20 @@ router.get('/records', authMiddleware, async (req, res, next) => {
 // GET /api/points/mall/products - 获取积分商城商品列表
 router.get('/mall/products', authMiddleware, async (req, res, next) => {
   try {
-    const { category } = req.query;
+    const { category, page = 1, pageSize = 20 } = req.query;
 
-    const products = await PointsProduct.findActiveProducts(category as string | undefined);
+    const query: Record<string, unknown> = { status: 1 };
+    if (category) {
+      query.category = category;
+    }
 
-    success(res, products);
+    const result = await PointsProduct.findPaginated(
+      query,
+      { page: Number(page), pageSize: Number(pageSize) },
+      { field: 'sortOrder', direction: 'asc' }
+    );
+
+    paginated(res, result.list, result.total, result.page, result.pageSize);
   } catch (err) {
     next(err);
   }

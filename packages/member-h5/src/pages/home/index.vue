@@ -3,7 +3,7 @@
     <!-- 用户信息卡片 -->
     <view class="user-card">
       <view class="user-info" @click="handleUserClick">
-        <image class="avatar" :src="userInfo?.avatar || '/static/default-avatar.png'" mode="aspectFill" />
+        <image class="avatar" :src="userInfo?.avatar || '/static/default-avatar.svg'" mode="aspectFill" />
         <view class="info">
           <text class="nickname">{{ userInfo?.nickname || '点击登录' }}</text>
           <view class="level-badge" v-if="userInfo">

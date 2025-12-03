@@ -278,13 +278,14 @@ onShow(() => {
 
 .bottom-bar {
   position: fixed;
-  bottom: 0;
+  /* 底部留出 tabBar 的高度 (约100rpx + 安全区域) */
+  bottom: calc(100rpx + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   background: #fff;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  z-index: 99;
 
   .checkin-btn {
     width: 100%;

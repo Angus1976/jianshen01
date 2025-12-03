@@ -8,10 +8,18 @@
 
     <view class="login-form">
       <!-- 微信一键登录 -->
+      <!-- #ifdef MP-WEIXIN -->
       <button class="wechat-btn" open-type="getPhoneNumber" @getphonenumber="handleWechatLogin">
         <view class="icon wechat"></view>
         <text>微信一键登录</text>
       </button>
+      <!-- #endif -->
+      <!-- #ifdef H5 -->
+      <button class="wechat-btn" @click="handleH5WechatLogin" :loading="wxLoading">
+        <view class="icon wechat" v-if="!wxLoading"></view>
+        <text>{{ wxLoading ? '正在登录...' : '微信登录' }}</text>
+      </button>
+      <!-- #endif -->
 
       <!-- 或者分割线 -->
       <view class="divider">
@@ -20,23 +28,80 @@
         <view class="line"></view>
       </view>
 
+      <!-- 登录方式切换 -->
+      <view class="login-tabs">
+        <view
+          class="tab"
+          :class="{ active: loginMode === 'sms' }"
+          @click="loginMode = 'sms'"
+        >
+          验证码登录
+        </view>
+        <view
+          class="tab"
+          :class="{ active: loginMode === 'password' }"
+          @click="loginMode = 'password'"
+        >
+          密码登录
+        </view>
+      </view>
+
       <!-- 手机号登录 -->
       <view class="phone-login">
         <view class="input-group">
           <input v-model="phone" type="number" maxlength="11" placeholder="请输入手机号" />
         </view>
-        <view class="input-group code-input">
-          <input v-model="code" type="number" maxlength="6" placeholder="请输入验证码" />
-          <button class="code-btn" :disabled="countdown > 0" @click="sendCode">
-            {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
-          </button>
-        </view>
 
-        <view class="invite-code" v-if="showInviteCode">
+        <!-- 验证码登录模式 -->
+        <template v-if="loginMode === 'sms'">
+          <view class="input-group code-input">
+            <input v-model="code" type="number" maxlength="6" placeholder="请输入验证码" />
+            <button class="code-btn" :disabled="countdown > 0" @click="sendCode">
+              {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+            </button>
+          </view>
+        </template>
+
+        <!-- 密码登录模式 -->
+        <template v-else>
+          <view class="input-group">
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              maxlength="20"
+              placeholder="请输入密码"
+            />
+            <view class="password-toggle" @click="showPassword = !showPassword">
+              <text>{{ showPassword ? '隐藏' : '显示' }}</text>
+            </view>
+          </view>
+
+          <!-- 注册模式下需要验证码 -->
+          <template v-if="isRegisterMode">
+            <view class="input-group code-input">
+              <input v-model="code" type="number" maxlength="6" placeholder="请输入验证码" />
+              <button class="code-btn" :disabled="countdown > 0" @click="sendCode">
+                {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+              </button>
+            </view>
+          </template>
+        </template>
+
+        <view class="invite-code" v-if="showInviteCode || isRegisterMode">
           <input v-model="inviteCode" placeholder="邀请码（选填）" />
         </view>
 
-        <button class="submit-btn" :disabled="!canSubmit" @click="handlePhoneLogin">登录</button>
+        <button class="submit-btn" :disabled="!canSubmit" @click="handleSubmit">
+          {{ isRegisterMode ? '注册' : '登录' }}
+        </button>
+
+        <!-- 密码模式下的切换链接 -->
+        <view class="mode-switch" v-if="loginMode === 'password'">
+          <text class="link" @click="isRegisterMode = !isRegisterMode">
+            {{ isRegisterMode ? '已有账号？去登录' : '没有账号？去注册' }}
+          </text>
+          <text class="link" @click="goForgotPassword" v-if="!isRegisterMode">忘记密码</text>
+        </view>
       </view>
     </view>
 
@@ -56,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { useUserStore } from '@/stores';
 import { authApi } from '@/api';
@@ -66,18 +131,49 @@ const userStore = useUserStore();
 
 const phone = ref('');
 const code = ref('');
+const password = ref('');
 const inviteCode = ref('');
 const showInviteCode = ref(false);
+const showPassword = ref(false);
 const countdown = ref(0);
 const agreed = ref(false);
+const wxLoading = ref(false);
+const loginMode = ref<'sms' | 'password'>('sms');
+const isRegisterMode = ref(false);
 
 const canSubmit = computed(() => {
-  return phone.value.length === 11 && code.value.length === 6 && agreed.value;
+  if (!agreed.value || phone.value.length !== 11) return false;
+
+  if (loginMode.value === 'sms') {
+    // 验证码登录: 需要手机号 + 验证码
+    return code.value.length === 6;
+  } else {
+    // 密码模式
+    if (isRegisterMode.value) {
+      // 注册: 需要手机号 + 密码 + 验证码
+      return password.value.length >= 6 && code.value.length === 6;
+    } else {
+      // 登录: 只需要手机号 + 密码
+      return password.value.length >= 6;
+    }
+  }
 });
 
-let timer: NodeJS.Timeout | null = null;
+let timer: ReturnType<typeof setInterval> | null = null;
 
-const handleWechatLogin = async (e: any) => {
+// 判断是否在微信浏览器中
+const isWechatBrowser = () => {
+  // #ifdef H5
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.indexOf('micromessenger') !== -1;
+  // #endif
+  // #ifndef H5
+  return false;
+  // #endif
+};
+
+// 小程序微信登录
+const handleWechatLogin = async (e: { detail: { errMsg: string } }) => {
   if (!agreed.value) {
     showError('请先同意用户协议');
     return;
@@ -100,17 +196,77 @@ const handleWechatLogin = async (e: any) => {
     const res = await authApi.wechatLogin(loginRes.code);
     userStore.login(res);
     showSuccess('登录成功');
-
-    // 返回上一页或首页
-    const pages = getCurrentPages();
-    if (pages.length > 1) {
-      uni.navigateBack();
-    } else {
-      uni.reLaunch({ url: '/pages/home/index' });
-    }
+    navigateAfterLogin();
   } catch (error) {
     console.error('微信登录失败', error);
   }
+};
+
+// H5 微信网页授权登录
+const handleH5WechatLogin = async () => {
+  if (!agreed.value) {
+    showError('请先同意用户协议');
+    return;
+  }
+
+  // 检查是否在微信浏览器中
+  if (!isWechatBrowser()) {
+    showError('请在微信中打开');
+    return;
+  }
+
+  try {
+    wxLoading.value = true;
+
+    // 构建回调 URL
+    const currentUrl = window.location.href.split('?')[0];
+    const redirectUri = `${currentUrl}`;
+
+    // 获取微信授权 URL
+    const { authUrl } = await authApi.getWechatH5AuthUrl(redirectUri, inviteCode.value || undefined);
+
+    // 跳转到微信授权页面
+    window.location.href = authUrl;
+  } catch (error) {
+    console.error('获取微信授权URL失败', error);
+    wxLoading.value = false;
+  }
+};
+
+// 处理微信授权回调 (H5)
+const handleWechatCallback = async () => {
+  // #ifdef H5
+  const urlParams = new URLSearchParams(window.location.search);
+  const wxCode = urlParams.get('code');
+  const state = urlParams.get('state');
+
+  if (wxCode) {
+    try {
+      wxLoading.value = true;
+
+      // 清除 URL 中的 code 参数，避免刷新重复请求
+      const cleanUrl = window.location.href.split('?')[0];
+      window.history.replaceState({}, '', cleanUrl);
+
+      // 用 code 换取用户信息并登录
+      const res = await authApi.wechatH5Login(wxCode, state || undefined);
+      userStore.login(res);
+
+      if (res.isNewUser) {
+        showSuccess('注册成功');
+      } else {
+        showSuccess('登录成功');
+      }
+
+      navigateAfterLogin();
+    } catch (error) {
+      console.error('微信登录失败', error);
+      showError('微信登录失败，请重试');
+    } finally {
+      wxLoading.value = false;
+    }
+  }
+  // #endif
 };
 
 const sendCode = async () => {
@@ -135,34 +291,56 @@ const sendCode = async () => {
   }
 };
 
-const handlePhoneLogin = async () => {
+const handleSubmit = async () => {
   if (!agreed.value) {
     showError('请先同意用户协议');
     return;
   }
 
   try {
-    const res = await authApi.smsLogin(phone.value, code.value, inviteCode.value || undefined);
-    userStore.login(res);
-    showSuccess('登录成功');
+    let res;
 
-    const pages = getCurrentPages();
-    if (pages.length > 1) {
-      uni.navigateBack();
+    if (loginMode.value === 'sms') {
+      // 验证码登录
+      res = await authApi.smsLogin(phone.value, code.value, inviteCode.value || undefined);
+    } else if (isRegisterMode.value) {
+      // 密码注册
+      res = await authApi.register(phone.value, password.value, code.value, inviteCode.value || undefined);
+      showSuccess('注册成功');
     } else {
-      uni.reLaunch({ url: '/pages/home/index' });
+      // 密码登录
+      res = await authApi.passwordLogin(phone.value, password.value);
     }
+
+    userStore.login(res);
+    if (!isRegisterMode.value) {
+      showSuccess('登录成功');
+    }
+    navigateAfterLogin();
   } catch (error) {
-    console.error('手机登录失败', error);
+    console.error('登录失败', error);
   }
 };
 
-const handleAgreementChange = (e: any) => {
+const goForgotPassword = () => {
+  uni.navigateTo({
+    url: '/pages/forgot-password/index',
+  });
+};
+
+const navigateAfterLogin = () => {
+  // 首页是 tabBar 页面，使用 switchTab 跳转
+  uni.switchTab({ url: '/pages/home/index' });
+};
+
+const handleAgreementChange = (e: { detail: { value: string[] } }) => {
   agreed.value = e.detail.value.length > 0;
 };
 
 const openAgreement = (type: 'user' | 'privacy') => {
-  // TODO: 打开协议页面
+  uni.navigateTo({
+    url: `/pages/agreement/index?type=${type}`,
+  });
 };
 
 onLoad((options) => {
@@ -170,6 +348,11 @@ onLoad((options) => {
     inviteCode.value = options.inviteCode;
     showInviteCode.value = true;
   }
+});
+
+onMounted(() => {
+  // H5 环境下检查是否有微信授权回调
+  handleWechatCallback();
 });
 </script>
 
@@ -208,13 +391,34 @@ onLoad((options) => {
 .login-form {
   margin-top: 80rpx;
 
+  .login-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 48rpx;
+    margin-bottom: 32rpx;
+
+    .tab {
+      padding: 16rpx 0;
+      font-size: 30rpx;
+      color: $text-secondary;
+      border-bottom: 4rpx solid transparent;
+      transition: all 0.3s;
+
+      &.active {
+        color: $primary-color;
+        border-bottom-color: $primary-color;
+        font-weight: 600;
+      }
+    }
+  }
+
   .wechat-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     height: 96rpx;
-    background: #07C160;
+    background: #07c160;
     color: #fff;
     font-size: 32rpx;
     border-radius: $radius-full;
@@ -274,6 +478,23 @@ onLoad((options) => {
             background: #ccc;
           }
         }
+      }
+
+      .password-toggle {
+        padding: 0 16rpx;
+        font-size: 26rpx;
+        color: $primary-color;
+      }
+    }
+
+    .mode-switch {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24rpx;
+      font-size: 26rpx;
+
+      .link {
+        color: $primary-color;
       }
     }
 
