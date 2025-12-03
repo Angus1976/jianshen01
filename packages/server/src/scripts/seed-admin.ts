@@ -3,20 +3,19 @@
  * 运行: yarn workspace @rocketbird/server seed:admin
  */
 import 'dotenv/config';
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { config } from '../config';
+import { initTCB } from '../config/database';
 import { AdminUser, AdminRole } from '../models/admin.model';
 
 async function seedAdmin() {
   try {
-    // 连接数据库
-    await mongoose.connect(config.database.uri, config.database.options);
-    console.log('数据库连接成功');
+    // 初始化 TCB
+    initTCB();
+    console.log('TCB 数据库连接成功');
 
     // 检查是否已存在超级管理员角色
-    let superAdminRole = await AdminRole.findOne({ code: 'super_admin' });
+    let superAdminRole = await AdminRole.findByCode('super_admin');
 
     if (!superAdminRole) {
       superAdminRole = await AdminRole.create({
@@ -34,7 +33,7 @@ async function seedAdmin() {
     }
 
     // 检查是否已存在 admin 用户
-    const existingAdmin = await AdminUser.findOne({ username: 'admin' });
+    const existingAdmin = await AdminUser.findByUsername('admin');
 
     if (!existingAdmin) {
       // 加密密码
@@ -68,8 +67,6 @@ async function seedAdmin() {
   } catch (error) {
     console.error('❌ 初始化失败:', error);
     process.exit(1);
-  } finally {
-    await mongoose.disconnect();
   }
 }
 

@@ -1,44 +1,48 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 意见反馈
-export interface IFeedback extends Document {
+export interface IFeedback {
+  _id?: string;
   feedbackId: string;
   userId: string;
   userNickname: string;
   userPhone?: string;
-  type: string;
+  type: string; // suggestion/bug/complaint/other
   content: string;
   images: string[];
   contact?: string;
-  status: number;
+  status: number; // 0待处理 1处理中 2已回复 3已关闭
   replyContent?: string;
   replyAt?: Date;
   replyBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const FeedbackSchema = new Schema<IFeedback>(
-  {
-    feedbackId: { type: String, required: true, unique: true },
-    userId: { type: String, required: true, index: true },
-    userNickname: { type: String, required: true },
-    userPhone: { type: String },
-    type: { type: String, required: true }, // suggestion/bug/complaint/other
-    content: { type: String, required: true },
-    images: { type: [String], default: [] },
-    contact: { type: String },
-    status: { type: Number, default: 0 }, // 0待处理 1处理中 2已回复 3已关闭
-    replyContent: { type: String },
-    replyAt: { type: Date },
-    replyBy: { type: String },
-  },
-  {
-    timestamps: true,
-    collection: 'feedbacks',
+class FeedbackRepository extends BaseRepository<IFeedback> {
+  constructor() {
+    super('feedbacks');
   }
-);
 
-FeedbackSchema.index({ status: 1, createdAt: -1 });
+  async findByFeedbackId(feedbackId: string): Promise<IFeedback | null> {
+    return this.findOne({ feedbackId });
+  }
 
-export const Feedback = mongoose.model<IFeedback>('Feedback', FeedbackSchema);
+  async findByUserId(userId: string): Promise<IFeedback[]> {
+    const { data } = await this.collection
+      .where({ userId })
+      .orderBy('createdAt', 'desc')
+      .get();
+    return data as IFeedback[];
+  }
+
+  async findByStatus(status: number): Promise<IFeedback[]> {
+    const { data } = await this.collection
+      .where({ status })
+      .orderBy('createdAt', 'desc')
+      .get();
+    return data as IFeedback[];
+  }
+}
+
+export const Feedback = new FeedbackRepository();

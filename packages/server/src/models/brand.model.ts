@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 品牌信息
-export interface IBrandInfo extends Document {
+export interface IBrandInfo {
+  _id?: string;
   brandId: string;
   name: string;
   logo: string;
@@ -15,79 +16,82 @@ export interface IBrandInfo extends Document {
     weibo?: string;
     douyin?: string;
   };
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const BrandInfoSchema = new Schema<IBrandInfo>(
-  {
-    brandId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    logo: { type: String, required: true },
-    slogan: { type: String, default: '' },
-    description: { type: String, default: '' },
-    contactPhone: { type: String },
-    contactEmail: { type: String },
-    wechatQrCode: { type: String },
-    socialLinks: {
-      wechat: { type: String },
-      weibo: { type: String },
-      douyin: { type: String },
-    },
-  },
-  {
-    timestamps: true,
-    collection: 'brand_info',
+class BrandInfoRepository extends BaseRepository<IBrandInfo> {
+  constructor() {
+    super('brand_info');
   }
-);
 
-export const BrandInfo = mongoose.model<IBrandInfo>('BrandInfo', BrandInfoSchema);
+  async getMainBrand(): Promise<IBrandInfo | null> {
+    const { data } = await this.collection.limit(1).get();
+    return (data[0] as IBrandInfo) || null;
+  }
+}
+
+export const BrandInfo = new BrandInfoRepository();
 
 // 品牌文章
-export interface IBrandArticle extends Document {
+export interface IBrandArticle {
+  _id?: string;
   articleId: string;
   title: string;
   summary?: string;
   coverImage: string;
   content: string;
-  category: string;
+  category: string; // news/activity/knowledge
   tags: string[];
   viewCount: number;
   isTop: boolean;
   sortOrder: number;
-  status: number;
+  status: number; // 0草稿 1发布
   publishAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const BrandArticleSchema = new Schema<IBrandArticle>(
-  {
-    articleId: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    summary: { type: String },
-    coverImage: { type: String, required: true },
-    content: { type: String, required: true },
-    category: { type: String, required: true }, // news/activity/knowledge
-    tags: { type: [String], default: [] },
-    viewCount: { type: Number, default: 0 },
-    isTop: { type: Boolean, default: false },
-    sortOrder: { type: Number, default: 0 },
-    status: { type: Number, default: 1 }, // 0草稿 1发布
-    publishAt: { type: Date, default: Date.now },
-  },
-  {
-    timestamps: true,
-    collection: 'brand_articles',
+class BrandArticleRepository extends BaseRepository<IBrandArticle> {
+  constructor() {
+    super('brand_articles');
   }
-);
 
-BrandArticleSchema.index({ category: 1, status: 1, publishAt: -1 });
+  async findByArticleId(articleId: string): Promise<IBrandArticle | null> {
+    return this.findOne({ articleId });
+  }
 
-export const BrandArticle = mongoose.model<IBrandArticle>('BrandArticle', BrandArticleSchema);
+  async findByCategory(category: string): Promise<IBrandArticle[]> {
+    const { data } = await this.collection
+      .where({ category, status: 1 })
+      .orderBy('isTop', 'desc')
+      .orderBy('publishAt', 'desc')
+      .get();
+    return data as IBrandArticle[];
+  }
+
+  async findPublished(): Promise<IBrandArticle[]> {
+    const { data } = await this.collection
+      .where({ status: 1 })
+      .orderBy('isTop', 'desc')
+      .orderBy('publishAt', 'desc')
+      .get();
+    return data as IBrandArticle[];
+  }
+
+  async incrementViewCount(articleId: string): Promise<boolean> {
+    const result = await this.collection.where({ articleId }).update({
+      viewCount: this.cmd.inc(1),
+    });
+    return (result.updated ?? 0) > 0;
+  }
+}
+
+export const BrandArticle = new BrandArticleRepository();
 
 // 门店信息
-export interface IBrandStore extends Document {
+export interface IBrandStore {
+  _id?: string;
   storeId: string;
   name: string;
   address: string;
@@ -99,69 +103,74 @@ export interface IBrandStore extends Document {
   facilities: string[];
   description?: string;
   sortOrder: number;
-  status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  status: number; // 0关闭 1营业
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const BrandStoreSchema = new Schema<IBrandStore>(
-  {
-    storeId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    address: { type: String, required: true },
-    phone: { type: String, required: true },
-    businessHours: { type: String, required: true },
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true },
-    images: { type: [String], default: [] },
-    facilities: { type: [String], default: [] },
-    description: { type: String },
-    sortOrder: { type: Number, default: 0 },
-    status: { type: Number, default: 1 }, // 0关闭 1营业
-  },
-  {
-    timestamps: true,
-    collection: 'brand_stores',
+class BrandStoreRepository extends BaseRepository<IBrandStore> {
+  constructor() {
+    super('brand_stores');
   }
-);
 
-export const BrandStore = mongoose.model<IBrandStore>('BrandStore', BrandStoreSchema);
+  async findByStoreId(storeId: string): Promise<IBrandStore | null> {
+    return this.findOne({ storeId });
+  }
+
+  async findActiveStores(): Promise<IBrandStore[]> {
+    const { data } = await this.collection
+      .where({ status: 1 })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as IBrandStore[];
+  }
+}
+
+export const BrandStore = new BrandStoreRepository();
 
 // 轮播图
-export interface IBanner extends Document {
+export interface IBanner {
+  _id?: string;
   bannerId: string;
   title: string;
   image: string;
-  linkType: string;
+  linkType: string; // none/page/article/url
   linkUrl?: string;
-  position: string;
+  position: string; // home/points/checkin
   sortOrder: number;
   startAt?: Date;
   endAt?: Date;
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const BannerSchema = new Schema<IBanner>(
-  {
-    bannerId: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    image: { type: String, required: true },
-    linkType: { type: String, default: 'none' }, // none/page/article/url
-    linkUrl: { type: String },
-    position: { type: String, default: 'home' }, // home/points/checkin
-    sortOrder: { type: Number, default: 0 },
-    startAt: { type: Date },
-    endAt: { type: Date },
-    status: { type: Number, default: 1 },
-  },
-  {
-    timestamps: true,
-    collection: 'banners',
+class BannerRepository extends BaseRepository<IBanner> {
+  constructor() {
+    super('banners');
   }
-);
 
-BannerSchema.index({ position: 1, status: 1, sortOrder: -1 });
+  async findByBannerId(bannerId: string): Promise<IBanner | null> {
+    return this.findOne({ bannerId });
+  }
 
-export const Banner = mongoose.model<IBanner>('Banner', BannerSchema);
+  async findByPosition(position: string): Promise<IBanner[]> {
+    const now = new Date();
+    const { data } = await this.collection
+      .where({
+        position,
+        status: 1,
+      })
+      .orderBy('sortOrder', 'asc')
+      .get();
+
+    // 过滤有效期内的轮播图
+    return (data as IBanner[]).filter((banner) => {
+      if (banner.startAt && new Date(banner.startAt) > now) return false;
+      if (banner.endAt && new Date(banner.endAt) < now) return false;
+      return true;
+    });
+  }
+}
+
+export const Banner = new BannerRepository();

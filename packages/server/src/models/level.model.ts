@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 等级规则
-export interface ILevelRule extends Document {
+export interface ILevelRule {
+  _id?: string;
   levelId: string;
   name: string;
   code: string;
@@ -11,64 +12,76 @@ export interface ILevelRule extends Document {
   color: string;
   benefits: string[];
   sortOrder: number;
-  status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  status: number; // 0禁用 1启用
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const LevelRuleSchema = new Schema<ILevelRule>(
-  {
-    levelId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    code: { type: String, required: true, unique: true },
-    minGrowth: { type: Number, required: true },
-    maxGrowth: { type: Number, required: true },
-    icon: { type: String, default: '' },
-    color: { type: String, default: '#000000' },
-    benefits: { type: [String], default: [] },
-    sortOrder: { type: Number, default: 0 },
-    status: { type: Number, default: 1 }, // 0禁用 1启用
-  },
-  {
-    timestamps: true,
-    collection: 'level_rules',
+class LevelRuleRepository extends BaseRepository<ILevelRule> {
+  constructor() {
+    super('level_rules');
   }
-);
 
-export const LevelRule = mongoose.model<ILevelRule>('LevelRule', LevelRuleSchema);
+  async findByLevelId(levelId: string): Promise<ILevelRule | null> {
+    return this.findOne({ levelId });
+  }
+
+  async findByCode(code: string): Promise<ILevelRule | null> {
+    return this.findOne({ code });
+  }
+
+  async findActiveRules(): Promise<ILevelRule[]> {
+    const { data } = await this.collection
+      .where({ status: 1 })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as ILevelRule[];
+  }
+
+  // 根据成长值查找对应等级
+  async findByGrowthValue(growthValue: number): Promise<ILevelRule | null> {
+    const { data } = await this.collection
+      .where({
+        status: 1,
+        minGrowth: this.cmd.lte(growthValue),
+        maxGrowth: this.cmd.gte(growthValue),
+      })
+      .limit(1)
+      .get();
+    return (data[0] as ILevelRule) || null;
+  }
+}
+
+export const LevelRule = new LevelRuleRepository();
 
 // 等级变动记录
-export interface ILevelChangeLog extends Document {
+export interface ILevelChangeLog {
+  _id?: string;
   logId: string;
   userId: string;
   beforeLevelId: string;
   beforeLevelName: string;
   afterLevelId: string;
   afterLevelName: string;
-  changeType: string;
+  changeType: string; // upgrade/downgrade/manual
   reason: string;
   operatorId?: string;
   operatorName?: string;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
-const LevelChangeLogSchema = new Schema<ILevelChangeLog>(
-  {
-    logId: { type: String, required: true, unique: true },
-    userId: { type: String, required: true, index: true },
-    beforeLevelId: { type: String, required: true },
-    beforeLevelName: { type: String, required: true },
-    afterLevelId: { type: String, required: true },
-    afterLevelName: { type: String, required: true },
-    changeType: { type: String, required: true }, // upgrade/downgrade/manual
-    reason: { type: String, default: '' },
-    operatorId: { type: String },
-    operatorName: { type: String },
-  },
-  {
-    timestamps: { createdAt: true, updatedAt: false },
-    collection: 'level_change_logs',
+class LevelChangeLogRepository extends BaseRepository<ILevelChangeLog> {
+  constructor() {
+    super('level_change_logs');
   }
-);
 
-export const LevelChangeLog = mongoose.model<ILevelChangeLog>('LevelChangeLog', LevelChangeLogSchema);
+  async findByUserId(userId: string): Promise<ILevelChangeLog[]> {
+    const { data } = await this.collection
+      .where({ userId })
+      .orderBy('createdAt', 'desc')
+      .get();
+    return data as ILevelChangeLog[];
+  }
+}
+
+export const LevelChangeLog = new LevelChangeLogRepository();

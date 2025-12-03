@@ -7,14 +7,6 @@ export const config = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '3000', 10),
 
-  // 数据库
-  database: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/rocketbird',
-    options: {
-      maxPoolSize: 10,
-    },
-  },
-
   // JWT
   jwt: {
     secret: process.env.JWT_SECRET || 'rocketbird-secret-key',
@@ -23,7 +15,7 @@ export const config = {
     refreshTokenExpire: '30d',
   },
 
-  // TCB
+  // TCB 云开发
   tcb: {
     envId: process.env.TCB_ENV_ID || '',
     secretId: process.env.TCB_SECRET_ID || '',

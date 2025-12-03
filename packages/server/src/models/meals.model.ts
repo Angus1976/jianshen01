@@ -1,36 +1,41 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 健身餐分类
-export interface IMealCategory extends Document {
+export interface IMealCategory {
+  _id?: string;
   categoryId: string;
   name: string;
   description?: string;
   icon?: string;
   sortOrder: number;
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const MealCategorySchema = new Schema<IMealCategory>(
-  {
-    categoryId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    description: { type: String },
-    icon: { type: String },
-    sortOrder: { type: Number, default: 0 },
-    status: { type: Number, default: 1 },
-  },
-  {
-    timestamps: true,
-    collection: 'meal_categories',
+class MealCategoryRepository extends BaseRepository<IMealCategory> {
+  constructor() {
+    super('meal_categories');
   }
-);
 
-export const MealCategory = mongoose.model<IMealCategory>('MealCategory', MealCategorySchema);
+  async findByCategoryId(categoryId: string): Promise<IMealCategory | null> {
+    return this.findOne({ categoryId });
+  }
+
+  async findActiveCategories(): Promise<IMealCategory[]> {
+    const { data } = await this.collection
+      .where({ status: 1 })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as IMealCategory[];
+  }
+}
+
+export const MealCategory = new MealCategoryRepository();
 
 // 健身餐
-export interface IFitnessMeal extends Document {
+export interface IFitnessMeal {
+  _id?: string;
   mealId: string;
   name: string;
   description: string;
@@ -51,84 +56,91 @@ export interface IFitnessMeal extends Document {
     content: string;
     image?: string;
   }>;
-  cookingTime: number;
-  difficulty: number;
+  cookingTime: number; // 分钟
+  difficulty: number; // 1简单 2中等 3困难
   tags: string[];
   viewCount: number;
   favoriteCount: number;
   isRecommended: boolean;
   sortOrder: number;
-  status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  status: number; // 0下架 1上架
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const FitnessMealSchema = new Schema<IFitnessMeal>(
-  {
-    mealId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    description: { type: String, default: '' },
-    coverImage: { type: String, required: true },
-    images: { type: [String], default: [] },
-    categoryId: { type: String, required: true, index: true },
-    categoryName: { type: String, required: true },
-    calories: { type: Number, required: true },
-    protein: { type: Number, required: true },
-    carbs: { type: Number, required: true },
-    fat: { type: Number, required: true },
-    ingredients: [
-      {
-        name: { type: String, required: true },
-        amount: { type: String, required: true },
-      },
-    ],
-    steps: [
-      {
-        stepNo: { type: Number, required: true },
-        content: { type: String, required: true },
-        image: { type: String },
-      },
-    ],
-    cookingTime: { type: Number, required: true }, // 分钟
-    difficulty: { type: Number, default: 1 }, // 1简单 2中等 3困难
-    tags: { type: [String], default: [] },
-    viewCount: { type: Number, default: 0 },
-    favoriteCount: { type: Number, default: 0 },
-    isRecommended: { type: Boolean, default: false },
-    sortOrder: { type: Number, default: 0 },
-    status: { type: Number, default: 1 }, // 0下架 1上架
-  },
-  {
-    timestamps: true,
-    collection: 'fitness_meals',
+class FitnessMealRepository extends BaseRepository<IFitnessMeal> {
+  constructor() {
+    super('fitness_meals');
   }
-);
 
-FitnessMealSchema.index({ categoryId: 1, status: 1 });
-FitnessMealSchema.index({ isRecommended: 1, sortOrder: -1 });
+  async findByMealId(mealId: string): Promise<IFitnessMeal | null> {
+    return this.findOne({ mealId });
+  }
 
-export const FitnessMeal = mongoose.model<IFitnessMeal>('FitnessMeal', FitnessMealSchema);
+  async findByCategory(categoryId: string): Promise<IFitnessMeal[]> {
+    const { data } = await this.collection
+      .where({ categoryId, status: 1 })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as IFitnessMeal[];
+  }
+
+  async findRecommended(): Promise<IFitnessMeal[]> {
+    const { data } = await this.collection
+      .where({ isRecommended: true, status: 1 })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as IFitnessMeal[];
+  }
+
+  async incrementViewCount(mealId: string): Promise<boolean> {
+    const result = await this.collection.where({ mealId }).update({
+      viewCount: this.cmd.inc(1),
+    });
+    return (result.updated ?? 0) > 0;
+  }
+
+  async updateFavoriteCount(mealId: string, delta: number): Promise<boolean> {
+    const result = await this.collection.where({ mealId }).update({
+      favoriteCount: this.cmd.inc(delta),
+    });
+    return (result.updated ?? 0) > 0;
+  }
+}
+
+export const FitnessMeal = new FitnessMealRepository();
 
 // 用户收藏
-export interface IMealFavorite extends Document {
+export interface IMealFavorite {
+  _id?: string;
   favoriteId: string;
   userId: string;
   mealId: string;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
-const MealFavoriteSchema = new Schema<IMealFavorite>(
-  {
-    favoriteId: { type: String, required: true, unique: true },
-    userId: { type: String, required: true },
-    mealId: { type: String, required: true },
-  },
-  {
-    timestamps: { createdAt: true, updatedAt: false },
-    collection: 'meal_favorites',
+class MealFavoriteRepository extends BaseRepository<IMealFavorite> {
+  constructor() {
+    super('meal_favorites');
   }
-);
 
-MealFavoriteSchema.index({ userId: 1, mealId: 1 }, { unique: true });
+  async findByUserAndMeal(userId: string, mealId: string): Promise<IMealFavorite | null> {
+    return this.findOne({ userId, mealId });
+  }
 
-export const MealFavorite = mongoose.model<IMealFavorite>('MealFavorite', MealFavoriteSchema);
+  async findByUserId(userId: string): Promise<IMealFavorite[]> {
+    const { data } = await this.collection
+      .where({ userId })
+      .orderBy('createdAt', 'desc')
+      .get();
+    return data as IMealFavorite[];
+  }
+
+  async removeByUserAndMeal(userId: string, mealId: string): Promise<boolean> {
+    const result = await this.collection.where({ userId, mealId }).remove();
+    const deleted = typeof result.deleted === 'number' ? result.deleted : 0;
+    return deleted > 0;
+  }
+}
+
+export const MealFavorite = new MealFavoriteRepository();

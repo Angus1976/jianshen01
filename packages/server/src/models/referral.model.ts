@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 邀请记录
-export interface IInviteRecord extends Document {
+export interface IInviteRecord {
+  _id?: string;
   recordId: string;
   inviterId: string;
   inviterNickname: string;
@@ -10,65 +11,79 @@ export interface IInviteRecord extends Document {
   inviteePhone?: string;
   inviteCode: string;
   rewardPoints: number;
-  status: number;
+  status: number; // 0待奖励 1已奖励 2已失效
   rewardedAt?: Date;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
-const InviteRecordSchema = new Schema<IInviteRecord>(
-  {
-    recordId: { type: String, required: true, unique: true },
-    inviterId: { type: String, required: true, index: true },
-    inviterNickname: { type: String, required: true },
-    inviteeId: { type: String, required: true, unique: true },
-    inviteeNickname: { type: String, required: true },
-    inviteePhone: { type: String },
-    inviteCode: { type: String, required: true },
-    rewardPoints: { type: Number, default: 0 },
-    status: { type: Number, default: 0 }, // 0待奖励 1已奖励 2已失效
-    rewardedAt: { type: Date },
-  },
-  {
-    timestamps: { createdAt: true, updatedAt: false },
-    collection: 'invite_records',
+class InviteRecordRepository extends BaseRepository<IInviteRecord> {
+  constructor() {
+    super('invite_records');
   }
-);
 
-InviteRecordSchema.index({ inviterId: 1, createdAt: -1 });
+  async findByRecordId(recordId: string): Promise<IInviteRecord | null> {
+    return this.findOne({ recordId });
+  }
 
-export const InviteRecord = mongoose.model<IInviteRecord>('InviteRecord', InviteRecordSchema);
+  async findByInviterId(inviterId: string): Promise<IInviteRecord[]> {
+    const { data } = await this.collection
+      .where({ inviterId })
+      .orderBy('createdAt', 'desc')
+      .get();
+    return data as IInviteRecord[];
+  }
+
+  async findByInviteeId(inviteeId: string): Promise<IInviteRecord | null> {
+    return this.findOne({ inviteeId });
+  }
+
+  async countByInviterId(inviterId: string): Promise<number> {
+    const result = await this.collection.where({ inviterId }).count();
+    return result.total ?? 0;
+  }
+
+  async countTodayByInviterId(inviterId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const result = await this.collection
+      .where({
+        inviterId,
+        createdAt: this.cmd.gte(today).and(this.cmd.lt(tomorrow)),
+      })
+      .count();
+    return result.total ?? 0;
+  }
+}
+
+export const InviteRecord = new InviteRecordRepository();
 
 // 邀请规则
-export interface IInviteRule extends Document {
+export interface IInviteRule {
+  _id?: string;
   ruleId: string;
   name: string;
   description: string;
   inviterReward: number;
   inviteeReward: number;
-  rewardCondition: string;
-  maxInvitesPerDay: number;
-  maxInvitesTotal: number;
+  rewardCondition: string; // register/first_purchase
+  maxInvitesPerDay: number; // 0=不限
+  maxInvitesTotal: number; // 0=不限
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const InviteRuleSchema = new Schema<IInviteRule>(
-  {
-    ruleId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    description: { type: String, default: '' },
-    inviterReward: { type: Number, required: true },
-    inviteeReward: { type: Number, default: 0 },
-    rewardCondition: { type: String, default: 'register' }, // register/first_purchase
-    maxInvitesPerDay: { type: Number, default: 0 }, // 0=不限
-    maxInvitesTotal: { type: Number, default: 0 }, // 0=不限
-    status: { type: Number, default: 1 },
-  },
-  {
-    timestamps: true,
-    collection: 'invite_rules',
+class InviteRuleRepository extends BaseRepository<IInviteRule> {
+  constructor() {
+    super('invite_rules');
   }
-);
 
-export const InviteRule = mongoose.model<IInviteRule>('InviteRule', InviteRuleSchema);
+  async findActiveRule(): Promise<IInviteRule | null> {
+    return this.findOne({ status: 1 });
+  }
+}
+
+export const InviteRule = new InviteRuleRepository();

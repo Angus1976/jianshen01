@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 管理员
-export interface IAdminUser extends Document {
+export interface IAdminUser {
+  _id?: string;
   adminId: string;
   username: string;
   password: string;
@@ -11,40 +12,42 @@ export interface IAdminUser extends Document {
   avatar?: string;
   roleId: string;
   roleName: string;
-  status: number;
+  status: number; // 0禁用 1正常
   lastLoginAt?: Date;
   lastLoginIp?: string;
   createdBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const AdminUserSchema = new Schema<IAdminUser>(
-  {
-    adminId: { type: String, required: true, unique: true },
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    realName: { type: String, required: true },
-    phone: { type: String },
-    email: { type: String },
-    avatar: { type: String },
-    roleId: { type: String, required: true },
-    roleName: { type: String, required: true },
-    status: { type: Number, default: 1 }, // 0禁用 1正常
-    lastLoginAt: { type: Date },
-    lastLoginIp: { type: String },
-    createdBy: { type: String },
-  },
-  {
-    timestamps: true,
-    collection: 'admin_users',
+class AdminUserRepository extends BaseRepository<IAdminUser> {
+  constructor() {
+    super('admin_users');
   }
-);
 
-export const AdminUser = mongoose.model<IAdminUser>('AdminUser', AdminUserSchema);
+  async findByAdminId(adminId: string): Promise<IAdminUser | null> {
+    return this.findOne({ adminId });
+  }
+
+  async findByUsername(username: string): Promise<IAdminUser | null> {
+    return this.findOne({ username });
+  }
+
+  async updateLastLogin(adminId: string, ip: string): Promise<boolean> {
+    const admin = await this.findByAdminId(adminId);
+    if (!admin) return false;
+    return this.updateById(admin._id!, {
+      lastLoginAt: new Date(),
+      lastLoginIp: ip,
+    } as Partial<IAdminUser>);
+  }
+}
+
+export const AdminUser = new AdminUserRepository();
 
 // 角色
-export interface IAdminRole extends Document {
+export interface IAdminRole {
+  _id?: string;
   roleId: string;
   name: string;
   code: string;
@@ -52,59 +55,71 @@ export interface IAdminRole extends Document {
   permissions: string[];
   isSystem: boolean;
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const AdminRoleSchema = new Schema<IAdminRole>(
-  {
-    roleId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    code: { type: String, required: true, unique: true },
-    description: { type: String },
-    permissions: { type: [String], default: [] },
-    isSystem: { type: Boolean, default: false },
-    status: { type: Number, default: 1 },
-  },
-  {
-    timestamps: true,
-    collection: 'admin_roles',
+class AdminRoleRepository extends BaseRepository<IAdminRole> {
+  constructor() {
+    super('admin_roles');
   }
-);
 
-export const AdminRole = mongoose.model<IAdminRole>('AdminRole', AdminRoleSchema);
+  async findByRoleId(roleId: string): Promise<IAdminRole | null> {
+    return this.findOne({ roleId });
+  }
+
+  async findByCode(code: string): Promise<IAdminRole | null> {
+    return this.findOne({ code });
+  }
+
+  async findActiveRoles(): Promise<IAdminRole[]> {
+    const { data } = await this.collection.where({ status: 1 }).get();
+    return data as IAdminRole[];
+  }
+}
+
+export const AdminRole = new AdminRoleRepository();
 
 // 权限定义
-export interface IAdminPermission extends Document {
+export interface IAdminPermission {
+  _id?: string;
   permissionId: string;
   name: string;
   code: string;
   module: string;
-  type: string;
+  type: string; // menu/button/api
   parentId?: string;
   sortOrder: number;
 }
 
-const AdminPermissionSchema = new Schema<IAdminPermission>(
-  {
-    permissionId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    code: { type: String, required: true, unique: true },
-    module: { type: String, required: true },
-    type: { type: String, required: true }, // menu/button/api
-    parentId: { type: String },
-    sortOrder: { type: Number, default: 0 },
-  },
-  {
-    timestamps: false,
-    collection: 'admin_permissions',
+class AdminPermissionRepository extends BaseRepository<IAdminPermission> {
+  constructor() {
+    super('admin_permissions');
   }
-);
 
-export const AdminPermission = mongoose.model<IAdminPermission>('AdminPermission', AdminPermissionSchema);
+  async findByCode(code: string): Promise<IAdminPermission | null> {
+    return this.findOne({ code });
+  }
+
+  async findByModule(module: string): Promise<IAdminPermission[]> {
+    const { data } = await this.collection
+      .where({ module })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as IAdminPermission[];
+  }
+
+  async findAll(): Promise<IAdminPermission[]> {
+    const { data } = await this.collection.orderBy('sortOrder', 'asc').get();
+    return data as IAdminPermission[];
+  }
+}
+
+export const AdminPermission = new AdminPermissionRepository();
 
 // 操作日志
-export interface IOperationLog extends Document {
+export interface IOperationLog {
+  _id?: string;
   logId: string;
   adminId: string;
   adminName: string;
@@ -118,32 +133,31 @@ export interface IOperationLog extends Document {
   ip: string;
   userAgent?: string;
   duration?: number;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
-const OperationLogSchema = new Schema<IOperationLog>(
-  {
-    logId: { type: String, required: true, unique: true },
-    adminId: { type: String, required: true, index: true },
-    adminName: { type: String, required: true },
-    module: { type: String, required: true },
-    action: { type: String, required: true },
-    targetType: { type: String },
-    targetId: { type: String },
-    content: { type: String, required: true },
-    requestData: { type: Object },
-    responseCode: { type: Number },
-    ip: { type: String, required: true },
-    userAgent: { type: String },
-    duration: { type: Number },
-  },
-  {
-    timestamps: { createdAt: true, updatedAt: false },
-    collection: 'operation_logs',
+class OperationLogRepository extends BaseRepository<IOperationLog> {
+  constructor() {
+    super('operation_logs');
   }
-);
 
-OperationLogSchema.index({ module: 1, createdAt: -1 });
-OperationLogSchema.index({ createdAt: -1 });
+  async findByAdminId(adminId: string, limit = 100): Promise<IOperationLog[]> {
+    const { data } = await this.collection
+      .where({ adminId })
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+    return data as IOperationLog[];
+  }
 
-export const OperationLog = mongoose.model<IOperationLog>('OperationLog', OperationLogSchema);
+  async findByModule(module: string, limit = 100): Promise<IOperationLog[]> {
+    const { data } = await this.collection
+      .where({ module })
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+    return data as IOperationLog[];
+  }
+}
+
+export const OperationLog = new OperationLogRepository();

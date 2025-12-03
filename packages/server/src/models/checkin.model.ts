@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BaseRepository } from '../utils/base-repository';
 
 // 打卡主题
-export interface ICheckinTheme extends Document {
+export interface ICheckinTheme {
+  _id?: string;
   themeId: string;
   name: string;
   description: string;
@@ -13,36 +14,34 @@ export interface ICheckinTheme extends Document {
   shareRewardPoints: number;
   maxDailyCheckin: number;
   sortOrder: number;
-  status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  status: number; // 0禁用 1启用
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const CheckinThemeSchema = new Schema<ICheckinTheme>(
-  {
-    themeId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    description: { type: String, default: '' },
-    coverImage: { type: String, required: true },
-    bgImage: { type: String },
-    templateImages: { type: [String], default: [] },
-    stickerImages: { type: [String], default: [] },
-    rewardPoints: { type: Number, default: 0 },
-    shareRewardPoints: { type: Number, default: 0 },
-    maxDailyCheckin: { type: Number, default: 1 },
-    sortOrder: { type: Number, default: 0 },
-    status: { type: Number, default: 1 }, // 0禁用 1启用
-  },
-  {
-    timestamps: true,
-    collection: 'checkin_themes',
+class CheckinThemeRepository extends BaseRepository<ICheckinTheme> {
+  constructor() {
+    super('checkin_themes');
   }
-);
 
-export const CheckinTheme = mongoose.model<ICheckinTheme>('CheckinTheme', CheckinThemeSchema);
+  async findByThemeId(themeId: string): Promise<ICheckinTheme | null> {
+    return this.findOne({ themeId });
+  }
+
+  async findActiveThemes(): Promise<ICheckinTheme[]> {
+    const { data } = await this.collection
+      .where({ status: 1 })
+      .orderBy('sortOrder', 'asc')
+      .get();
+    return data as ICheckinTheme[];
+  }
+}
+
+export const CheckinTheme = new CheckinThemeRepository();
 
 // 打卡记录
-export interface ICheckinRecord extends Document {
+export interface ICheckinRecord {
+  _id?: string;
   recordId: string;
   userId: string;
   userNickname: string;
@@ -62,78 +61,94 @@ export interface ICheckinRecord extends Document {
   isShared: boolean;
   sharedAt?: Date;
   shareCount: number;
-  reviewStatus: number;
+  reviewStatus: number; // 0待审核 1通过 2拒绝
   reviewReason?: string;
   reviewedAt?: Date;
   reviewedBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const CheckinRecordSchema = new Schema<ICheckinRecord>(
-  {
-    recordId: { type: String, required: true, unique: true },
-    userId: { type: String, required: true, index: true },
-    userNickname: { type: String, required: true },
-    userAvatar: { type: String, default: '' },
-    themeId: { type: String, required: true, index: true },
-    themeName: { type: String, required: true },
-    content: { type: String },
-    images: { type: [String], default: [] },
-    location: {
-      name: { type: String },
-      latitude: { type: Number },
-      longitude: { type: Number },
-    },
-    posterUrl: { type: String },
-    rewardPoints: { type: Number, default: 0 },
-    shareRewardPoints: { type: Number, default: 0 },
-    isShared: { type: Boolean, default: false },
-    sharedAt: { type: Date },
-    shareCount: { type: Number, default: 0 },
-    reviewStatus: { type: Number, default: 1 }, // 0待审核 1通过 2拒绝
-    reviewReason: { type: String },
-    reviewedAt: { type: Date },
-    reviewedBy: { type: String },
-  },
-  {
-    timestamps: true,
-    collection: 'checkin_records',
+class CheckinRecordRepository extends BaseRepository<ICheckinRecord> {
+  constructor() {
+    super('checkin_records');
   }
-);
 
-CheckinRecordSchema.index({ userId: 1, createdAt: -1 });
-CheckinRecordSchema.index({ themeId: 1, createdAt: -1 });
+  async findByRecordId(recordId: string): Promise<ICheckinRecord | null> {
+    return this.findOne({ recordId });
+  }
 
-export const CheckinRecord = mongoose.model<ICheckinRecord>('CheckinRecord', CheckinRecordSchema);
+  async findByUserId(userId: string, limit = 20): Promise<ICheckinRecord[]> {
+    const { data } = await this.collection
+      .where({ userId })
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+    return data as ICheckinRecord[];
+  }
+
+  async findByThemeId(themeId: string, limit = 20): Promise<ICheckinRecord[]> {
+    const { data } = await this.collection
+      .where({ themeId, reviewStatus: 1 })
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+    return data as ICheckinRecord[];
+  }
+
+  // 获取用户今日打卡次数
+  async getUserTodayCheckinCount(userId: string, themeId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const result = await this.collection
+      .where({
+        userId,
+        themeId,
+        createdAt: this.cmd.gte(today).and(this.cmd.lt(tomorrow)),
+      })
+      .count();
+    return result.total ?? 0;
+  }
+
+  // 标记为已分享
+  async markAsShared(recordId: string): Promise<boolean> {
+    const record = await this.findByRecordId(recordId);
+    if (!record) return false;
+    return this.updateById(record._id!, {
+      isShared: true,
+      sharedAt: new Date(),
+      shareCount: (record.shareCount || 0) + 1,
+    } as Partial<ICheckinRecord>);
+  }
+}
+
+export const CheckinRecord = new CheckinRecordRepository();
 
 // 分享规则
-export interface IShareRule extends Document {
+export interface IShareRule {
+  _id?: string;
   ruleId: string;
   name: string;
   description: string;
   rewardPoints: number;
-  dailyLimit: number;
-  totalLimit: number;
+  dailyLimit: number; // 0=不限制
+  totalLimit: number; // 0=不限制
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const ShareRuleSchema = new Schema<IShareRule>(
-  {
-    ruleId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    description: { type: String, default: '' },
-    rewardPoints: { type: Number, required: true },
-    dailyLimit: { type: Number, default: 0 }, // 0=不限制
-    totalLimit: { type: Number, default: 0 }, // 0=不限制
-    status: { type: Number, default: 1 },
-  },
-  {
-    timestamps: true,
-    collection: 'share_rules',
+class ShareRuleRepository extends BaseRepository<IShareRule> {
+  constructor() {
+    super('share_rules');
   }
-);
 
-export const ShareRule = mongoose.model<IShareRule>('ShareRule', ShareRuleSchema);
+  async findActiveRule(): Promise<IShareRule | null> {
+    return this.findOne({ status: 1 });
+  }
+}
+
+export const ShareRule = new ShareRuleRepository();
