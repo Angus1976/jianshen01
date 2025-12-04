@@ -5,20 +5,20 @@
       <view class="card-bg"></view>
       <view class="card-content">
         <view class="level-badge">
-          <text class="level-icon">{{ getLevelIcon(myLevelInfo.currentLevel.levelCode) }}</text>
-          <text class="level-name">{{ myLevelInfo.currentLevel.name }}</text>
+          <text class="level-icon">{{ getLevelIcon(myLevelInfo.levelCode) }}</text>
+          <text class="level-name">{{ myLevelInfo.levelName }}</text>
         </view>
         <view class="growth-info">
           <text class="growth-label">当前成长值</text>
-          <text class="growth-value">{{ myLevelInfo.currentGrowth }}</text>
+          <text class="growth-value">{{ myLevelInfo.growthValue }}</text>
         </view>
         <view class="progress-section" v-if="myLevelInfo.nextLevel">
           <view class="progress-bar">
             <view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
           </view>
           <view class="progress-text">
-            <text>距离{{ myLevelInfo.nextLevel.name }}还差</text>
-            <text class="highlight">{{ myLevelInfo.nextLevel.minGrowth - myLevelInfo.currentGrowth }}</text>
+            <text>距离{{ myLevelInfo.nextLevel.levelName }}还差</text>
+            <text class="highlight">{{ myLevelInfo.nextLevel.needGrowth }}</text>
             <text>成长值</text>
           </view>
         </view>
@@ -31,15 +31,14 @@
     <!-- 等级权益 -->
     <view class="section">
       <view class="section-title">我的等级权益</view>
-      <view class="benefits-grid" v-if="myLevelInfo?.currentLevel.benefits">
+      <view class="benefits-grid" v-if="myLevelInfo?.benefits?.length">
         <view
           class="benefit-item"
-          v-for="benefit in myLevelInfo.currentLevel.benefits"
-          :key="benefit.code"
+          v-for="(benefit, index) in myLevelInfo.benefits"
+          :key="index"
         >
-          <view class="benefit-icon">{{ getBenefitIcon(benefit.code) }}</view>
-          <text class="benefit-name">{{ benefit.name }}</text>
-          <text class="benefit-desc">{{ benefit.description }}</text>
+          <view class="benefit-icon">🎯</view>
+          <text class="benefit-name">{{ benefit }}</text>
         </view>
       </view>
     </view>
@@ -52,11 +51,11 @@
           class="level-item"
           v-for="level in levels"
           :key="level.levelId"
-          :class="{ current: myLevelInfo?.currentLevel.levelId === level.levelId }"
+          :class="{ current: myLevelInfo?.levelId === level.levelId }"
         >
           <view class="level-header">
             <view class="level-badge-small">
-              <text class="level-icon">{{ getLevelIcon(level.levelCode) }}</text>
+              <text class="level-icon">{{ getLevelIcon(level.code) }}</text>
               <text class="level-name">{{ level.name }}</text>
             </view>
             <text class="level-growth">{{ level.minGrowth }}成长值</text>
@@ -122,8 +121,8 @@ const myLevelInfo = ref<MyLevelInfo | null>(null);
 
 const progressPercent = computed(() => {
   if (!myLevelInfo.value || !myLevelInfo.value.nextLevel) return 100;
-  const current = myLevelInfo.value.currentGrowth;
-  const min = myLevelInfo.value.currentLevel.minGrowth;
+  const current = myLevelInfo.value.growthValue;
+  const min = myLevelInfo.value.minGrowth;
   const max = myLevelInfo.value.nextLevel.minGrowth;
   return Math.min(100, Math.max(0, ((current - min) / (max - min)) * 100));
 });

@@ -39,10 +39,19 @@ export enum LevelStatus {
 }
 
 export interface MyLevelInfo {
-  currentLevel: Level;
-  totalPoints: number;
-  currentPoints: number;
-  nextLevel?: Level;
-  progress: number;
-  pointsToNext: number;
+  levelId: string;
+  levelName: string;
+  levelCode: string;
+  icon: string;
+  color: string;
+  benefits: string[];
+  growthValue: number;
+  minGrowth: number;
+  maxGrowth: number;
+  nextLevel: {
+    levelId: string;
+    levelName: string;
+    minGrowth: number;
+    needGrowth: number;
+  } | null;
 }
