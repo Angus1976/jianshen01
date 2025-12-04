@@ -11,15 +11,21 @@
           "functions": [
             {
               "name": "api",
-              "runtime": "Nodejs18.15",
-              "entry": "app.js",
-              "memory": 256,
-              "timeout": 60,
+              "runtime": "Nodejs12.16",
+              "entry": "dist/app.js",
+              "memory": 512,
+              "timeout": 30,
               "handler": "app.main",
-              "installDependency": true,
-              "path": "/api"
+              "installDependency": true
             }
           ]
+        }
+      },
+      "hosting": {
+        "use": "@cloudbase/framework-plugin-website",
+        "inputs": {
+          "cloudPath": "/",
+          "localPath": "../member-h5/dist"
         }
       }
     }

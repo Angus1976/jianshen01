@@ -2,7 +2,6 @@
   "name": "@rocketbird/server",
   "version": "1.0.0",
   "description": "RocketBird 后端服务 - TCB 云函数",
-  "type": "module",
   "main": "./dist/app.js",
   "scripts": {
     "dev": "tsx watch src/app.ts",

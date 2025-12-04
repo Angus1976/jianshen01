@@ -156,7 +156,7 @@ deploy_server() {
     fi
 
     cd packages/server
-    tcb run deploy -e "$ENV_ID"
+    tcb framework deploy -e "$ENV_ID"
     cd ../..
     success "后端服务部署完成"
 }

@@ -4,12 +4,11 @@
  */
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 // 必须在其他模块导入前加载环境变量
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(__filename);
 const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.development';
-dotenv.config({ path: path.resolve(__dirname, '../../', envFile) });
+dotenv.config({ path: path.resolve(__dirname, '../../../', envFile) });
 
 async function seedAdmin() {
   // 使用动态导入，确保环境变量已加载
