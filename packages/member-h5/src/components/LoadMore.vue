@@ -74,9 +74,30 @@ const handleLoadMore = () => {
 
   .load-more {
     text {
-      padding: 16rpx 32rpx;
+      padding: 16rpx 40rpx;
       border: 1rpx solid $border-color;
       border-radius: $radius-full;
+      background: #fff;
+      transition: all $transition-fast;
+    }
+
+    &:active text {
+      background: $bg-color;
+      border-color: $primary-color;
+      color: $primary-color;
+    }
+  }
+
+  .no-more {
+    position: relative;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1rpx;
+      background: $border-color;
+      margin: 0 $spacing-md;
     }
   }
 }

@@ -1,7 +1,10 @@
 <template>
   <view class="section-header">
     <text class="title">{{ title }}</text>
-    <text class="more" v-if="showMore" @click="handleMore">{{ moreText }}</text>
+    <view class="more" v-if="showMore" @click="handleMore">
+      <text>{{ moreText }}</text>
+      <view class="arrow"></view>
+    </view>
   </view>
 </template>
 
@@ -43,11 +46,46 @@ const handleMore = () => {
     font-size: $font-lg;
     font-weight: 500;
     color: $text-color;
+    position: relative;
+    padding-left: $spacing-sm;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6rpx;
+      height: 28rpx;
+      background: $primary-color;
+      border-radius: 3rpx;
+    }
   }
 
   .more {
+    display: flex;
+    align-items: center;
     font-size: 26rpx;
     color: $text-secondary;
+    transition: color $transition-fast;
+
+    &:active {
+      color: $primary-color;
+    }
+
+    .arrow {
+      width: 12rpx;
+      height: 12rpx;
+      margin-left: 8rpx;
+      border-right: 2rpx solid currentColor;
+      border-bottom: 2rpx solid currentColor;
+      transform: rotate(-45deg);
+      transition: transform $transition-fast;
+    }
+
+    &:active .arrow {
+      transform: rotate(-45deg) translateX(4rpx);
+    }
   }
 }
 </style>

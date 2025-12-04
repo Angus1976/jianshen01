@@ -394,15 +394,19 @@ onMounted(() => {
   .login-tabs {
     display: flex;
     justify-content: center;
-    gap: 48rpx;
-    margin-bottom: 32rpx;
+    gap: $spacing-xl;
+    margin-bottom: $spacing-lg;
 
     .tab {
-      padding: 16rpx 0;
+      padding: $spacing-sm 0;
       font-size: 30rpx;
       color: $text-secondary;
       border-bottom: 4rpx solid transparent;
-      transition: all 0.3s;
+      transition: all $transition-fast;
+
+      &:active {
+        opacity: $opacity-active;
+      }
 
       &.active {
         color: $primary-color;
@@ -422,6 +426,14 @@ onMounted(() => {
     color: #fff;
     font-size: 32rpx;
     border-radius: $radius-full;
+    box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
+    transition: all $transition-fast;
+
+    &:active {
+      transform: scale(0.98);
+      opacity: $opacity-active;
+      box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
+    }
 
     .icon {
       width: 40rpx;
@@ -473,28 +485,45 @@ onMounted(() => {
           color: #fff;
           font-size: 26rpx;
           border-radius: $radius-md;
+          transition: all $transition-fast;
+
+          &:active:not([disabled]) {
+            transform: scale(0.96);
+            opacity: $opacity-active;
+          }
 
           &[disabled] {
             background: #ccc;
+            opacity: $opacity-disabled;
           }
         }
       }
 
       .password-toggle {
-        padding: 0 16rpx;
+        padding: 0 $spacing-sm;
         font-size: 26rpx;
         color: $primary-color;
+        transition: opacity $transition-fast;
+
+        &:active {
+          opacity: $opacity-active;
+        }
       }
     }
 
     .mode-switch {
       display: flex;
       justify-content: space-between;
-      margin-top: 24rpx;
+      margin-top: $spacing-md;
       font-size: 26rpx;
 
       .link {
         color: $primary-color;
+        transition: opacity $transition-fast;
+
+        &:active {
+          opacity: $opacity-active;
+        }
       }
     }
 
@@ -511,14 +540,24 @@ onMounted(() => {
     .submit-btn {
       width: 100%;
       height: 96rpx;
-      margin-top: 48rpx;
+      margin-top: $spacing-xl;
       background: $primary-color;
       color: #fff;
       font-size: 32rpx;
       border-radius: $radius-full;
+      box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.3);
+      transition: all $transition-fast;
+
+      &:active:not([disabled]) {
+        transform: scale(0.98);
+        opacity: $opacity-active;
+        box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.2);
+      }
 
       &[disabled] {
         background: #ccc;
+        opacity: $opacity-disabled;
+        box-shadow: none;
       }
     }
   }

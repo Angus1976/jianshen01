@@ -11,7 +11,7 @@
             <text class="growth">成长值 {{ userInfo.growthValue }}</text>
           </view>
         </view>
-        <text class="arrow">></text>
+        <view class="arrow"></view>
       </view>
 
       <view class="stats" v-if="userInfo">
@@ -36,17 +36,17 @@
         <view class="menu-item" @click="navigateTo('/pages/level/index')">
           <view class="icon level"></view>
           <text class="title">会员等级</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
         <view class="menu-item" @click="navigateTo('/pages/benefits/index')">
           <view class="icon benefits"></view>
           <text class="title">我的福利</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
         <view class="menu-item" @click="navigateTo('/pages/points/orders')">
           <view class="icon orders"></view>
           <text class="title">兑换记录</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
       </view>
 
@@ -54,12 +54,12 @@
         <view class="menu-item" @click="navigateTo('/pages/meals/index')">
           <view class="icon meals"></view>
           <text class="title">健身餐谱</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
         <view class="menu-item" @click="navigateTo('/pages/referral/index')">
           <view class="icon referral"></view>
           <text class="title">推荐好友</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
       </view>
 
@@ -67,12 +67,12 @@
         <view class="menu-item" @click="navigateTo('/pages/brand/index')">
           <view class="icon brand"></view>
           <text class="title">品牌介绍</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
         <view class="menu-item" @click="navigateTo('/pages/feedback/index')">
           <view class="icon feedback"></view>
           <text class="title">意见反馈</text>
-          <text class="arrow">></text>
+          <view class="arrow"></view>
         </view>
       </view>
     </view>
@@ -138,16 +138,23 @@ onShow(() => {
   background: linear-gradient(135deg, $primary-color, $primary-light);
   padding: 40rpx 32rpx;
   color: #fff;
+  box-shadow: $shadow-lg;
 
   .user-info {
     display: flex;
     align-items: center;
+    transition: opacity $transition-fast;
+
+    &:active {
+      opacity: $opacity-active;
+    }
 
     .avatar {
       width: 120rpx;
       height: 120rpx;
       border-radius: 50%;
       border: 4rpx solid rgba(255, 255, 255, 0.3);
+      box-shadow: $shadow-md;
     }
 
     .info {
@@ -180,8 +187,16 @@ onShow(() => {
     }
 
     .arrow {
-      font-size: 32rpx;
-      opacity: 0.7;
+      width: 16rpx;
+      height: 16rpx;
+      border-right: 3rpx solid rgba(255, 255, 255, 0.7);
+      border-bottom: 3rpx solid rgba(255, 255, 255, 0.7);
+      transform: rotate(-45deg);
+      transition: transform $transition-fast;
+    }
+
+    &:active .arrow {
+      transform: rotate(-45deg) translateX(4rpx);
     }
   }
 
@@ -212,19 +227,25 @@ onShow(() => {
 }
 
 .menu-section {
-  padding: 24rpx;
+  padding: $spacing-md;
 
   .menu-group {
     background: #fff;
     border-radius: $radius-lg;
-    margin-bottom: 24rpx;
+    margin-bottom: $spacing-md;
     overflow: hidden;
+    box-shadow: $shadow-sm;
 
     .menu-item {
       display: flex;
       align-items: center;
-      padding: 32rpx 24rpx;
+      padding: $spacing-lg $spacing-md;
       border-bottom: 1rpx solid $border-color;
+      transition: background-color $transition-fast;
+
+      &:active {
+        background-color: $bg-color;
+      }
 
       &:last-child {
         border-bottom: none;
@@ -235,6 +256,7 @@ onShow(() => {
         height: 48rpx;
         border-radius: $radius-sm;
         margin-right: 20rpx;
+        box-shadow: $shadow-sm;
 
         &.level { background: linear-gradient(135deg, #ffc107, #ff9800); }
         &.benefits { background: linear-gradient(135deg, #e91e63, #ff4081); }
@@ -252,15 +274,23 @@ onShow(() => {
       }
 
       .arrow {
-        font-size: 28rpx;
-        color: $text-placeholder;
+        width: 16rpx;
+        height: 16rpx;
+        border-right: 3rpx solid $text-placeholder;
+        border-bottom: 3rpx solid $text-placeholder;
+        transform: rotate(-45deg);
+        transition: transform $transition-fast;
+      }
+
+      &:active .arrow {
+        transform: rotate(-45deg) translateX(4rpx);
       }
     }
   }
 }
 
 .logout-section {
-  padding: 0 24rpx;
+  padding: 0 $spacing-md;
 
   .logout-btn {
     width: 100%;
@@ -270,6 +300,13 @@ onShow(() => {
     color: $error-color;
     font-size: 30rpx;
     border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    transition: all $transition-fast;
+
+    &:active {
+      background: #fff5f5;
+      transform: scale(0.98);
+    }
   }
 }
 </style>

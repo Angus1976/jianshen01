@@ -59,24 +59,33 @@ const handleAction = () => {
   color: $text-placeholder;
 
   .empty-image {
-    width: 200rpx;
-    height: 200rpx;
-    margin-bottom: $spacing-md;
+    width: 240rpx;
+    height: 240rpx;
+    margin-bottom: $spacing-lg;
+    opacity: 0.8;
   }
 
   .empty-text {
     font-size: $font-md;
     text-align: center;
     padding: 0 $spacing-lg;
+    line-height: 1.6;
   }
 
   .empty-action {
-    margin-top: $spacing-lg;
-    padding: 16rpx 48rpx;
+    margin-top: $spacing-xl;
+    padding: 20rpx 64rpx;
     font-size: $font-md;
     color: #fff;
     background: $primary-color;
     border-radius: $radius-full;
+    box-shadow: $shadow-md;
+    transition: transform $transition-fast, opacity $transition-fast;
+
+    &:active {
+      transform: scale(0.96);
+      opacity: $opacity-active;
+    }
   }
 }
 </style>

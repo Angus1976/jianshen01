@@ -35,3 +35,18 @@ $font-md: 28rpx;
 $font-lg: 32rpx;
 $font-xl: 36rpx;
 $font-xxl: 48rpx;
+
+/* 阴影系统 */
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+$shadow-xl: 0 12rpx 32rpx rgba(0, 0, 0, 0.16);
+
+/* 过渡动画 */
+$transition-fast: 0.15s ease;
+$transition-normal: 0.25s ease;
+$transition-slow: 0.35s ease;
+
+/* 按钮状态透明度 */
+$opacity-active: 0.8;
+$opacity-disabled: 0.5;

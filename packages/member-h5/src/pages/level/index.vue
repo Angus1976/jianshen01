@@ -186,9 +186,10 @@ onShow(() => {
 
 .current-level-card {
   position: relative;
-  margin: 24rpx;
+  margin: $spacing-md;
   border-radius: $radius-lg;
   overflow: hidden;
+  box-shadow: $shadow-xl;
 
   .card-bg {
     position: absolute;
@@ -275,28 +276,48 @@ onShow(() => {
 
 .section {
   background: #fff;
-  margin: 24rpx;
-  padding: 24rpx;
+  margin: $spacing-md;
+  padding: $spacing-md;
   border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
 
   .section-title {
     font-size: 32rpx;
     font-weight: 500;
     color: $text-color;
-    margin-bottom: 24rpx;
+    margin-bottom: $spacing-md;
+    padding-left: $spacing-sm;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6rpx;
+      height: 28rpx;
+      background: $primary-color;
+      border-radius: 3rpx;
+    }
   }
 }
 
 .benefits-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24rpx;
+  gap: $spacing-md;
 
   .benefit-item {
     text-align: center;
     padding: 20rpx;
     background: $bg-color;
     border-radius: $radius-md;
+    transition: transform $transition-fast;
+
+    &:active {
+      transform: scale(0.96);
+    }
 
     .benefit-icon {
       font-size: 48rpx;
@@ -321,11 +342,12 @@ onShow(() => {
 
 .level-list {
   .level-item {
-    padding: 24rpx;
-    margin-bottom: 16rpx;
+    padding: $spacing-md;
+    margin-bottom: $spacing-sm;
     background: $bg-color;
     border-radius: $radius-md;
     border: 2rpx solid transparent;
+    transition: all $transition-fast;
 
     &:last-child {
       margin-bottom: 0;
@@ -333,7 +355,8 @@ onShow(() => {
 
     &.current {
       border-color: $primary-color;
-      background: rgba(82, 196, 26, 0.05);
+      background: rgba(255, 107, 53, 0.05);
+      box-shadow: $shadow-sm;
     }
 
     .level-header {
@@ -384,8 +407,13 @@ onShow(() => {
   .rule-item {
     display: flex;
     align-items: center;
-    padding: 20rpx 0;
+    padding: $spacing-md 0;
     border-bottom: 1rpx solid $border-color;
+    transition: background-color $transition-fast;
+
+    &:active {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
 
     &:last-child {
       border-bottom: none;
@@ -399,6 +427,7 @@ onShow(() => {
       font-size: 40rpx;
       background: $bg-color;
       border-radius: $radius-md;
+      box-shadow: $shadow-sm;
     }
 
     .rule-content {

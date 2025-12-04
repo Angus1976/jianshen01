@@ -37,7 +37,7 @@
     <view class="item-right" v-if="$slots.action || rightText || showArrow">
       <slot name="action">
         <text class="right-text" :style="{ color: rightTextColor }">{{ rightText }}</text>
-        <text class="arrow" v-if="showArrow">›</text>
+        <view class="arrow" v-if="showArrow"></view>
       </slot>
     </view>
   </view>
@@ -88,8 +88,13 @@ const handleClick = () => {
 .list-item {
   display: flex;
   align-items: center;
-  padding: 20rpx 0;
+  padding: $spacing-md 0;
   border-bottom: 1rpx solid $border-color;
+  transition: background-color $transition-fast;
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
 
   &:last-child,
   &.no-border {
@@ -97,7 +102,7 @@ const handleClick = () => {
   }
 
   &.disabled {
-    opacity: 0.6;
+    opacity: $opacity-disabled;
     pointer-events: none;
   }
 
@@ -111,6 +116,7 @@ const handleClick = () => {
       align-items: center;
       justify-content: center;
       border-radius: $radius-md;
+      box-shadow: $shadow-sm;
 
       .icon-text {
         font-size: 40rpx;
@@ -119,6 +125,7 @@ const handleClick = () => {
 
     .icon-image {
       border-radius: $radius-md;
+      box-shadow: $shadow-sm;
     }
   }
 
@@ -164,10 +171,18 @@ const handleClick = () => {
     }
 
     .arrow {
-      font-size: 32rpx;
-      color: $text-placeholder;
-      margin-left: $spacing-xs;
+      width: 16rpx;
+      height: 16rpx;
+      margin-left: $spacing-sm;
+      border-right: 3rpx solid $text-placeholder;
+      border-bottom: 3rpx solid $text-placeholder;
+      transform: rotate(-45deg);
+      transition: transform $transition-fast;
     }
+  }
+
+  &:active .arrow {
+    transform: rotate(-45deg) translateX(4rpx);
   }
 }
 </style>

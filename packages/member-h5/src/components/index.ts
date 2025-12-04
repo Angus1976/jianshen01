@@ -7,6 +7,7 @@ export { default as SectionHeader } from './SectionHeader.vue';
 export { default as EmptyState } from './EmptyState.vue';
 export { default as ListItem } from './ListItem.vue';
 export { default as LoadMore } from './LoadMore.vue';
+export { default as Icon } from './Icon.vue';
 
 // 类型导出
 export type { StatItem, StatCardProps } from './StatCard.vue';

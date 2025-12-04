@@ -30,6 +30,12 @@ withDefaults(defineProps<StatCardProps>(), {
   padding: 40rpx;
   border-radius: $radius-lg;
   color: #fff;
+  box-shadow: $shadow-lg;
+  transition: transform $transition-normal, box-shadow $transition-normal;
+
+  &:active {
+    transform: scale(0.98);
+  }
 
   .stat-item {
     flex: 1;
