@@ -35,13 +35,34 @@ pids/
 coverage/
 .nyc_output/
 
-# Environment
+# Environment - SENSITIVE FILES
 .env
 .env.local
 .env.*.local
 .env.development
 .env.production
+.env.test
 !.env.example
+
+# Cloud Services Configuration - SENSITIVE
+cloudbaserc.local.json
+.tcb/
+cloudbaserc.production.json
+cloudbaserc.staging.json
+
+# API Keys and Secrets - SENSITIVE
+config/keys.json
+config/secrets.json
+**/secrets/
+**/keys/
+
+# Database Credentials - SENSITIVE
+config/database.local.json
+config/database.production.json
+
+# JWT and Auth Secrets - SENSITIVE
+config/auth.json
+config/jwt.json
 
 # OS
 .DS_Store
@@ -52,7 +73,6 @@ unpackage/
 .hbuilderx/
 
 # TCB
-cloudbaserc.local.json
 .tcb/
 
 # Test
@@ -64,3 +84,26 @@ __tests__/
 *.tgz
 .cache/
 .temp/
+
+# Deployment Scripts with Credentials - SENSITIVE
+scripts/deploy-with-creds.sh
+scripts/setup-with-keys.sh
+
+# Local Development Files - SENSITIVE
+local-config.json
+development-config.json
+test-config.json
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# Temporary Files
+tmp/
+temp/
+.tmp/
+
+# Package Manager Lock Files (if contain sensitive info)
+# yarn.lock  # Uncomment if contains sensitive URLs
+# package-lock.json  # Uncomment if contains sensitive URLs
