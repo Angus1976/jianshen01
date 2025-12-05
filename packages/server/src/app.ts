@@ -77,7 +77,11 @@ async function bootstrap() {
 
 bootstrap();
 
+import serverless from 'serverless-http';
+
 // 云函数入口
+export const main_handler = serverless(app);
+
 export const main = app;
 
 export default app;
