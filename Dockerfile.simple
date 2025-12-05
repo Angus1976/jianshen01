@@ -1,0 +1,51 @@
+# RocketBird 简化容器化部署 - 单阶段构建
+# 所有模块在同一阶段构建，避免 workspace 识别问题
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 安装生产工具
+RUN apk add --no-cache \
+    curl \
+    tini
+
+# 复制所有代码
+COPY . .
+
+# 安装依赖
+RUN yarn install --frozen-lockfile
+
+# 构建所有模块
+RUN yarn build:all
+
+# 准备静态文件目录
+RUN mkdir -p /app/public/h5 /app/public/admin && \
+    if [ -d /app/packages/member-h5/dist ]; then cp -r /app/packages/member-h5/dist/* /app/public/h5/; fi && \
+    if [ -d /app/packages/admin/dist ]; then cp -r /app/packages/admin/dist/* /app/public/admin/; fi
+
+# 清理不必要的文件以减小镜像大小
+RUN rm -rf \
+    /app/packages/*/node_modules \
+    /app/packages/*/src \
+    /app/packages/*/.git \
+    /app/.git \
+    /app/node_modules/.cache \
+    /app/node_modules/.bin
+
+# 设置环境变量
+ENV NODE_ENV=production \
+    PORT=8000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+
+# 使用 tini 作为 PID 1 进程
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# 启动应用
+CMD ["node", "packages/server/dist/app.js"]
+
+# 暴露端口
+EXPOSE 8000
