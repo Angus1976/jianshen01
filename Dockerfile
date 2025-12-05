@@ -10,11 +10,10 @@ RUN apk add --no-cache curl tini
 # 一步到位：复制、安装、构建、整理
 COPY . . && \
     yarn install --frozen-lockfile && \
-    yarn run build:h5 build:admin build:server --silent 2>&1 || echo "Build attempt completed" && \
-    mkdir -p public && \
-    [ -d packages/member-h5/dist ] && cp -r packages/member-h5/dist public/h5 || true && \
-    [ -d packages/admin/dist ] && cp -r packages/admin/dist public/admin || true && \
-    rm -rf packages/*/src packages/*/.* node_modules packages/*/node_modules
+    yarn run build:h5 && yarn run build:admin && yarn run build:server && \
+    mkdir -p public/h5 public/admin && \
+    cp -r packages/member-h5/dist/* public/h5/ 2>/dev/null || true && \
+    cp -r packages/admin/dist/* public/admin/ 2>/dev/null || true
 
 ENV NODE_ENV=production PORT=8000
 
