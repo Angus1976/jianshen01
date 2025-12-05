@@ -71,7 +71,7 @@ COPY --from=server-builder /app/server/dist ./dist
 COPY --from=server-builder /app/server/node_modules ./node_modules
 
 # 复制服务器入口文件
-COPY packages/server/dist/app.js ./app.js
+COPY --from=server-builder /app/server/dist/app.js ./app.js
 
 # 设置环境变量
 ENV NODE_ENV=production \
