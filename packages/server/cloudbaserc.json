@@ -1,33 +1,18 @@
 {
-  "version": "2.0",
-  "envId": "{{env.TCB_ENV_ID}}",
-  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
-  "framework": {
-    "name": "rocketbird-server",
-    "plugins": {
-      "function": {
-        "use": "@cloudbase/framework-plugin-function",
-        "inputs": {
-          "functions": [
-            {
-              "name": "api",
-              "runtime": "Nodejs12.16",
-              "entry": "dist/app.js",
-              "memory": 512,
-              "timeout": 30,
-              "handler": "app.main",
-              "installDependency": true
-            }
-          ]
-        }
-      },
-      "hosting": {
-        "use": "@cloudbase/framework-plugin-website",
-        "inputs": {
-          "cloudPath": "/",
-          "localPath": "../member-h5/dist"
-        }
-      }
+  "envId": "cloud1-4g2aaqb40446a63b",
+  "functions": [
+    {
+      "name": "api",
+      "runtime": "Nodejs10.15",
+      "handler": "app.main",
+      "timeout": 30,
+      "memorySize": 512,
+      "installDependency": true,
+      "ignore": [
+        "node_modules",
+        "node_modules/**/*",
+        ".git"
+      ]
     }
-  }
+  ]
 }

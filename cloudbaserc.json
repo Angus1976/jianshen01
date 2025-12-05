@@ -1,4 +1,11 @@
 {
-  "version": "2.0",
-  "envId": "cloud1-4g2aaqb40446a63b"
+  "envId": "cloud1-4g2aaqb40446a63b",
+  "functions": [
+    {
+      "name": "api",
+      "runtime": "Nodejs10.15",
+      "handler": "dist/app.js",
+      "codeUri": "packages/server"
+    }
+  ]
 }

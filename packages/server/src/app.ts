@@ -1,10 +1,15 @@
-import dotenv from 'dotenv';
-import path from 'path';
+// 注意: 在 CloudBase Node.js 10.15 运行时中，避免任何可能导致 __dirname 重复声明的操作
+// 包括不使用 path 模块
 
-// 根据环境加载对应的配置文件
-const __dirname = path.dirname(__filename);
-const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.development';
-dotenv.config({ path: path.resolve(__dirname, '../../../', envFile) });
+import dotenv from 'dotenv';
+
+// 为了避免 path 模块的问题，直接使用环境变量配置
+// 生产环境变量应该在云环境中设置
+try {
+  dotenv.config();
+} catch (e) {
+  // 忽略配置加载错误
+}
 
 import express from 'express';
 import cors from 'cors';
@@ -34,6 +39,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
+
+// 静态文件服务（容器部署时）
+app.use('/h5', express.static('public/h5'));
+app.use('/admin', express.static('public/admin'));
+app.use('/', express.static('public/h5')); // H5 作为默认首页
 
 // 路由
 app.use('/api', routes);
