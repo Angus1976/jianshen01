@@ -103,6 +103,7 @@ test-config.json
 tmp/
 temp/
 .tmp/
+TEMP-LOG/
 
 # Package Manager Lock Files (if contain sensitive info)
 # yarn.lock  # Uncomment if contains sensitive URLs
