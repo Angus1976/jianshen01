@@ -15,7 +15,8 @@ COPY package.json yarn.lock ./
 
 # 安装依赖并构建 H5
 RUN yarn install --frozen-lockfile && \
-    yarn workspace @rocketbird/member-h5 build
+    cd member-h5 && \
+    yarn build
 
 # ============================================
 # 第二阶段: 构建管理后台
@@ -31,7 +32,8 @@ COPY package.json yarn.lock ./
 
 # 安装依赖并构建管理后台
 RUN yarn install --frozen-lockfile && \
-    yarn workspace @rocketbird/admin build
+    cd admin && \
+    yarn build
 
 # ============================================
 # 第三阶段: 构建后端服务
@@ -47,7 +49,8 @@ COPY package.json yarn.lock ./
 
 # 安装依赖并构建后端
 RUN yarn install --frozen-lockfile && \
-    yarn workspace @rocketbird/server build
+    cd server && \
+    yarn build
 
 # ============================================
 # 最终阶段: 生产镜像
