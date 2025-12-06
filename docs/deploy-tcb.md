@@ -168,6 +168,12 @@ tcb fn deploy api -e $TCB_ENV_ID
 
 这样 `https://www.askaway.com.cn/` 能访问统一入口页，`/user`/`/admin` 直接进入真实应用。
 
+### 7.3 验证统一入口
+
+1. 打开 `https://www.askaway.com.cn/`，确认页面展示“会员端”与“管理后台”入口。
+2. 分别点击按钮跳转 `/user` 和 `/admin`，使用 `13800000001 / 123456` 登陆或注册以完成流程。
+3. 访问 `https://www.askaway.com.cn/api/health`（或 `tcb run log`）检查后端 JSON 返回 `{"status":"ok"}`，确保集成成功。
+
 ## 八、CI/CD 自动部署
 
 ### GitHub Actions 完整工作流

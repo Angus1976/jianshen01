@@ -63,6 +63,12 @@ Admin:    https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/admin
 | **统一入口** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/ | 13800000001 | 123456 |
 | **H5 会员端** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/user | 13800000001 | 123456 |
 | **管理后台** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/admin | 13800000001 | 123456 |
+
+### 验证统一入口
+
+1. 访问 `https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/`，点击“会员端”或“管理后台”，确认会话跳转到对应的入口画面。
+2. 使用账号 `13800000001` / `123456` 在两个入口尝试登录或注册（必要时可在 H5 先尝试验证码登录，在后台页面尝试普通登录）。
+3. 通过 `https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/api/health` 验证后端 JSON 响应包含 `{"status":"ok"}`，确保 API 在线。
 | **TCB 控制台** | https://console.cloud.tencent.com/tcb | - | - |
 
 ---

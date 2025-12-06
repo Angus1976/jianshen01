@@ -13,6 +13,7 @@ try {
 
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { loggerMiddleware } from './middlewares/logger.middleware';
 import { securityMiddleware } from './middlewares/security.middleware';
@@ -43,19 +44,25 @@ app.use(loggerMiddleware);
 app.use(securityMiddleware);
 
 // 静态文件服务（容器部署时）
-app.use('/h5', express.static('public/h5'));
-app.use('/admin', express.static('public/admin'));
-app.use('/', express.static('public/h5')); // H5 作为默认首页
+const publicDir = path.join(process.cwd(), 'public');
+const h5Dir = path.join(publicDir, 'h5');
+const adminDir = path.join(publicDir, 'admin');
 
-// 路由
-app.use('/api', routes);
+const sendIndex = (filePath: string) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      next(err);
+    }
+  });
+};
 
-// SPA fallback for frontend shells
-const sendStaticIndex = (res: express.Response, relativePath: string) =>
-  res.sendFile(relativePath, { root: process.cwd() });
+app.use('/h5', express.static(h5Dir));
+app.use('/admin', express.static(adminDir));
+app.use('/user', express.static(h5Dir));
+app.use('/assets', express.static(path.join(h5Dir, 'assets')));
 
-app.get('/admin*', (req, res) => sendStaticIndex(res, 'public/admin/index.html'));
-app.get(['/user*', '/h5*'], (req, res) => sendStaticIndex(res, 'public/h5/index.html'));
+app.get(['/admin', '/admin/*'], sendIndex(path.join(adminDir, 'index.html')));
+app.get(['/user', '/user/*', '/h5', '/h5/*'], sendIndex(path.join(h5Dir, 'index.html')));
 
 app.get('/', (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -85,6 +92,10 @@ app.get('/', (req, res) => {
   `);
 });
 
+app.use('/api', routes);
+
+app.use('/', express.static(h5Dir));
+
 // 错误处理
 app.use(errorMiddleware);
 
@@ -98,11 +109,9 @@ const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   try {
-    // 连接数据库
     await connectDatabase();
     console.log('Database connected');
 
-    // 启动服务器
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
