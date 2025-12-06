@@ -88,3 +88,13 @@ export const getBanners = (position: string = 'home') => {
     linkUrl: string;
   }[]>('/brand/banners', { position });
 };
+
+// 获取品牌故事
+export const getBrandStory = () => {
+  return get<BrandContent>('/brand/story');
+};
+
+// 获取品牌视频
+export const getBrandVideos = () => {
+  return get<BrandContent[]>('/brand/videos');
+};
