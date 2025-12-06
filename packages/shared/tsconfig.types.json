@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist/types",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["types/**/*", "constants/**/*", "utils/**/*", "validators/**/*", "index.ts"],
+  "exclude": ["node_modules", "dist"]
+}
