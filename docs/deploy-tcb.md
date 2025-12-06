@@ -68,6 +68,7 @@ yarn build:all
 ```bash
 yarn build:shared   # 先构建共享包
 yarn build:h5       # 会员端 H5
+# 在以 `/admin` 为部署路径时需提前设置 `VITE_ADMIN_BASE_URL=/admin/`
 yarn build:admin    # 管理后台
 yarn build:server   # 后端服务
 ```
