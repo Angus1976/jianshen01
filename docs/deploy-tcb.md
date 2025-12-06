@@ -157,22 +157,16 @@ tcb fn deploy api -e $TCB_ENV_ID
 
 ### 7.1 配置单页应用路由
 
-在云开发控制台 > 静态网站托管 > 设置：
-
-1. 设置「错误页面」为 `/index.html`（会员端）
-2. 为 `/admin` 路径设置错误页面为 `/admin/index.html`
+在云开发控制台，当前项目改为云托管部署后，前端入口通过 Express 统一提供，无需再单独配置静态网站的错误页面。如果你仍希望配置静态站点入口（比如 `tcb hosting`），也可以继续使用上面两条规则，但实际运行只要保证 Docker 镜像里 `public/h5` 与 `public/admin` 都存在即可。
 
 ### 7.2 配置自定义域名（可选）
 
-1. 进入 [云开发控制台](https://console.cloud.tencent.com/tcb) > 静态网站托管
-2. 点击「设置」>「自定义域名」
-3. 添加已备案的域名
-4. 配置 CNAME 解析
+1. 进入 [云开发控制台](https://console.cloud.tencent.com/tcb) > 云托管 > 服务设置
+2. 点击「自定义域名」，绑定 `www.askaway.com.cn` 到当前服务
+3. 添加路径规则：`/user` 指向 H5 入口、`/admin` 指向管理后台（由 Express 中间件自动返回）
+4. 配置 CNAME 或 CDN 解析，并保持 HTTPS
 
-建议的域名规划：
-- `m.example.com` → 会员端 H5
-- `admin.example.com` → 管理后台
-- `api.example.com` → 后端 API
+这样 `https://www.askaway.com.cn/` 能访问统一入口页，`/user`/`/admin` 直接进入真实应用。
 
 ## 八、CI/CD 自动部署
 

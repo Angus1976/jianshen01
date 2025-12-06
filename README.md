@@ -60,7 +60,8 @@ Admin:    https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/admin
 
 | 应用 | URL | 账户 | 密码 |
 |------|-----|------|------|
-| **H5 会员端** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com | 13800000001 | 123456 |
+| **统一入口** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/ | 13800000001 | 123456 |
+| **H5 会员端** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/user | 13800000001 | 123456 |
 | **管理后台** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/admin | 13800000001 | 123456 |
 | **TCB 控制台** | https://console.cloud.tencent.com/tcb | - | - |
 

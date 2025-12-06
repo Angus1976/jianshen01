@@ -50,6 +50,41 @@ app.use('/', express.static('public/h5')); // H5 作为默认首页
 // 路由
 app.use('/api', routes);
 
+// SPA fallback for frontend shells
+const sendStaticIndex = (res: express.Response, relativePath: string) =>
+  res.sendFile(relativePath, { root: process.cwd() });
+
+app.get('/admin*', (req, res) => sendStaticIndex(res, 'public/admin/index.html'));
+app.get(['/user*', '/h5*'], (req, res) => sendStaticIndex(res, 'public/h5/index.html'));
+
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+  res.send(`
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>RocketBird 入口</title>
+        <style>
+          body { font-family: sans-serif; text-align: center; padding-top: 140px; background: #0f172a; color: white; }
+          .card { background: rgba(255,255,255,0.08); border-radius: 1rem; padding: 2rem; display: inline-block; min-width: 280px; }
+          a { display: block; margin: 1rem 0; padding: 0.75rem 1.5rem; border-radius: 999px; text-decoration: none; color: #0f172a; font-weight: bold; }
+          .user { background: #38bdf8; }
+          .admin { background: #f97316; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>RocketBird 登录</h1>
+          <p>请选择你要访问的入口</p>
+          <a class="user" href="/user">会员端</a>
+          <a class="admin" href="/admin">管理后台</a>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 // 错误处理
 app.use(errorMiddleware);
 
