@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { success, error, paginated } from '../utils/response';
 import { BrandInfo, BrandArticle, BrandStore, Banner } from '../models/brand.model';
 import { ApiCode } from '@rocketbird/shared';
+import { brandStory, brandVideos } from '../config/brand-content';
 
 const router = Router();
 
@@ -217,5 +218,15 @@ router.get('/banners', async (req, res, next) => {
     next(err);
   }
 });
+
+    // GET /api/brand/story - 获取品牌故事内容
+    router.get('/story', (req, res) => {
+      success(res, brandStory);
+    });
+
+    // GET /api/brand/videos - 获取品牌视频列表
+    router.get('/videos', (req, res) => {
+      success(res, brandVideos);
+    });
 
 export default router;

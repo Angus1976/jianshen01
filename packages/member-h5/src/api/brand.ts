@@ -1,4 +1,5 @@
 import { get } from '@/utils/request';
+import type { BrandContent } from '@rocketbird/shared/types/brand';
 
 // 获取品牌信息
 export const getBrandInfo = () => {
