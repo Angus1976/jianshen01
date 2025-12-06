@@ -8,7 +8,8 @@ RUN yarn run build:h5
 RUN yarn run build:admin
 RUN yarn run build:server
 RUN mkdir -p public/h5 public/admin
-RUN cp -r packages/member-h5/dist/* public/h5/ 2>/dev/null || true
+# Ensure we copy the H5 build artifacts (which are generated into dist/build/h5/) directly to public/h5
+RUN if [ -d packages/member-h5/dist/build/h5 ]; then cp -r packages/member-h5/dist/build/h5/* public/h5/; elif [ -d packages/member-h5/dist ]; then cp -r packages/member-h5/dist/* public/h5/; fi 2>/dev/null || true
 RUN cp -r packages/admin/dist/* public/admin/ 2>/dev/null || true
 RUN yarn install --production --frozen-lockfile --ignore-scripts
 FROM node:18-alpine AS runtime

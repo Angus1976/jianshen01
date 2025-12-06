@@ -104,6 +104,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// also expose api health endpoint to match Docker HEALTHCHECK and platform expectations
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // 启动服务
 const PORT = process.env.PORT || 3000;
 

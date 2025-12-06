@@ -21,7 +21,7 @@ RUN yarn build:all
 
 # 准备静态文件目录
 RUN mkdir -p /app/public/h5 /app/public/admin && \
-    if [ -d /app/packages/member-h5/dist ]; then cp -r /app/packages/member-h5/dist/* /app/public/h5/; fi && \
+    if [ -d /app/packages/member-h5/dist/build/h5 ]; then cp -r /app/packages/member-h5/dist/build/h5/* /app/public/h5/; elif [ -d /app/packages/member-h5/dist ]; then cp -r /app/packages/member-h5/dist/* /app/public/h5/; fi && \
     if [ -d /app/packages/admin/dist ]; then cp -r /app/packages/admin/dist/* /app/public/admin/; fi
 
 # 清理不必要的文件以减小镜像大小
