@@ -1,9 +1,8 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache curl
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
 COPY . .
+RUN yarn install --frozen-lockfile
 RUN yarn run build:shared
 RUN yarn run build:h5
 RUN yarn run build:admin
