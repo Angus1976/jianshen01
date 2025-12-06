@@ -15,6 +15,7 @@ import express from 'express';
 import cors from 'cors';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { loggerMiddleware } from './middlewares/logger.middleware';
+import { securityMiddleware } from './middlewares/security.middleware';
 import routes from './routes';
 import { connectDatabase } from './config/database';
 
@@ -39,6 +40,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
+app.use(securityMiddleware);
 
 // 静态文件服务（容器部署时）
 app.use('/h5', express.static('public/h5'));
