@@ -8,7 +8,7 @@ export const securityMiddleware = (req: Request, res: Response, next: NextFuncti
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://www.gstatic.com",
-      "img-src 'self' data:",
+      "img-src 'self' data: https://cdn.dcloud.net.cn",
       "font-src 'self' data:",
       "connect-src 'self' http://localhost:3000 https://*",
       "frame-src 'self'",
