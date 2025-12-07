@@ -83,9 +83,9 @@ app.get('/', (req, res) => {
       <body>
         <div class="card">
           <h1>RocketBird 登录</h1>
-          <p>请选择你要访问的入口</p>
-          <a class="user" href="/user">会员端</a>
-          <a class="admin" href="/admin">管理后台</a>
+          <p>请选择你要访问的注册 / 登录入口</p>
+          <a class="user" href="/user/#/pages/login/index">会员端登录</a>
+          <a class="admin" href="/admin/login">管理后台登录</a>
         </div>
       </body>
     </html>
