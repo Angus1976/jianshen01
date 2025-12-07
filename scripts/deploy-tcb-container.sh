@@ -9,6 +9,11 @@
 
 set -e
 
+# 命令行行为默认设置
+BUILD=true
+SEED_ADMIN=false
+ENV_FILE=".env.local"
+
 # 颜色输出
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -33,15 +38,49 @@ print_error() {
     echo -e "${RED}✗${NC} $1"
 }
 
-# 从 .env.local 加载环境变量
+# 从 env 文件加载环境变量
 load_env() {
-    if [ -f ".env.local" ]; then
-        export $(cat .env.local | grep -v '#' | xargs)
-        print_success "已加载 .env.local"
+    local target="$ENV_FILE"
+    if [ ! -f "$target" ]; then
+        target=".env"
+    fi
+
+    if [ -f "$target" ]; then
+        export $(grep -v '^#' "$target" | xargs)
+        print_success "已加载 $target"
     else
-        print_error ".env.local 文件不存在"
+        print_error "未找到 $ENV_FILE 或 .env 文件"
         exit 1
     fi
+}
+
+# 解析命令行参数
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --no-build)
+                BUILD=false
+                shift
+                ;;
+            --seed-admin)
+                SEED_ADMIN=true
+                shift
+                ;;
+            --env-file)
+                ENV_FILE="$2"
+                shift 2
+                ;;
+            -h|--help)
+                print_info "用法: $0 [--no-build] [--seed-admin] [--env-file <path>]"
+                print_info "默认会构建 shared/h5/admin/server，并不自动 seed admin。"
+                exit 0
+                ;;
+            *)
+                print_warning "未知参数: $1"
+                shift
+                ;;
+        esac
+    done
 }
 
 # 检查 TCB CLI 是否安装
@@ -52,6 +91,23 @@ check_tcb_cli() {
         exit 1
     fi
     print_success "TCB CLI 已安装"
+}
+
+# 构建前端
+build_frontends() {
+    print_info "构建共享依赖、H5 与 Admin"
+    yarn build:shared
+    yarn build:h5
+    yarn build:admin
+    yarn build:server
+    print_success "构建完成（shared / H5 / admin / server）"
+}
+
+# 确保管理员账号存在
+ensure_admin_account() {
+    print_info "确保管理员账号存在（admin / admin123）"
+    yarn workspace @rocketbird/server seed:admin
+    print_success "管理员账号校验完成"
 }
 
 # 检查并登录 TCB 环境
@@ -237,6 +293,11 @@ print_summary() {
     echo "3. 查看云托管服务状态"
     echo "4. 获取服务访问 URL"
     echo "5. 测试 API 端点"
+    if [ "$SEED_ADMIN" = true ]; then
+        echo "6. 管理员账号: admin/admin123（已 seed）"
+    else
+        echo "6. 若未 seed 管理员，可加 --seed-admin 参数在本地执行。"
+    fi
     echo "=========================================="
     echo ""
 }
@@ -248,9 +309,19 @@ main() {
     print_info "=========================================="
     print_info "开始部署..."
     echo ""
+
+    parse_args "$@"
     
     # 1. 加载环境变量
     load_env
+
+    if [ "$BUILD" = true ]; then
+        build_frontends
+    fi
+
+    if [ "$SEED_ADMIN" = true ]; then
+        ensure_admin_account
+    fi
     
     # 2. 检查 TCB CLI
     check_tcb_cli
