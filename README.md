@@ -64,6 +64,10 @@ Admin:    https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/admin
 | **H5 会员端** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/user | 13800000001 | 123456 |
 | **管理后台** | https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/admin | 13800000001 | 123456 |
 
+### 🚀 构建产物说明
+- H5 会员端使用 UniApp history 路由，`manifest.json` 中的 router base 设置为 `/user`，构建后位于 `public/h5`，Docker 中通过 `app.use('/user', express.static(...))` 直接提供。
+- 管理后台使用 Vite base `/admin/`（在 `packages/admin/vite.config.ts` 通过 `base` 控制），`BrowserRouter` 通过 `import.meta.env.BASE_URL` 对齐，构建产物放在 `public/admin`。
+
 ### 验证统一入口
 
 1. 访问 `https://cloud1-4g2aaqb40446a63b-1390089965.tcloudbaseapp.com/`，点击“会员端”或“管理后台”，确认会话跳转到对应的入口画面。

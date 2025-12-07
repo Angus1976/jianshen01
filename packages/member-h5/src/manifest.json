@@ -9,7 +9,7 @@
     "title": "RocketBird会员",
     "router": {
       "mode": "history",
-      "base": "/"
+      "base": "/user"
     },
     "optimization": {
       "treeShaking": {
