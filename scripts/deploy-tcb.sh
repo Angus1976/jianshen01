@@ -131,7 +131,7 @@ deploy_h5() {
         error "H5 构建产物不存在，请先运行 yarn build:h5"
     fi
 
-    tcb hosting deploy ./packages/member-h5/dist/build/h5 / -e "$ENV_ID"
+    tcb hosting deploy ./packages/member-h5/dist/build/h5 /user -e "$ENV_ID"
     success "会员端 H5 部署完成"
 }
 
