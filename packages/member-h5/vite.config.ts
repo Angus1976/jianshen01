@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite';
 import uni from '@dcloudio/vite-plugin-uni';
 
-export default defineConfig({
+const baseUrl = process.env.BASE_URL ?? './';
+
+export default defineConfig(({ mode }) => ({
+  base: baseUrl,
   plugins: [uni()],
   server: {
     port: 5173,
@@ -12,4 +15,7 @@ export default defineConfig({
       },
     },
   },
-});
+  define: {
+    'process.env.BASE_URL': JSON.stringify(baseUrl),
+  },
+}));

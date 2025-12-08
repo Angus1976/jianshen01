@@ -13,6 +13,7 @@ try {
 
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import path from 'path';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { loggerMiddleware } from './middlewares/logger.middleware';
@@ -46,8 +47,34 @@ app.use(securityMiddleware);
 
 // 静态文件服务（容器部署时）
 const publicDir = path.join(process.cwd(), 'public');
-const h5Dir = path.join(publicDir, 'h5');
+const distH5Dir = path.join(process.cwd(), 'packages', 'member-h5', 'dist', 'build', 'h5');
+const publicH5Dir = path.join(publicDir, 'h5');
+const candidateH5Dirs = [distH5Dir, publicH5Dir];
+const h5Dir = candidateH5Dirs.find((dir) => fs.existsSync(dir)) ?? publicH5Dir;
+const h5Source = h5Dir === distH5Dir ? 'packages/member-h5/dist/build/h5' : 'public/h5';
+if (!fs.existsSync(h5Dir)) {
+  console.warn(`H5 静态文件目录缺失，当前路径: ${h5Dir}`);
+} else {
+  console.log(`H5 静态文件由 ${h5Source} 提供 (${h5Dir})`);
+}
 const adminDir = path.join(publicDir, 'admin');
+
+const imageMimeMap = new Map([
+  ['.svg', 'image/svg+xml'],
+  ['.png', 'image/png'],
+  ['.jpg', 'image/jpeg'],
+  ['.jpeg', 'image/jpeg'],
+  ['.webp', 'image/webp']
+]);
+
+const staticOptions = {
+  setHeaders(res: express.Response, filePath: string) {
+    const override = imageMimeMap.get(path.extname(filePath).toLowerCase());
+    if (override) {
+      res.setHeader('Content-Type', `${override}; charset=UTF-8`);
+    }
+  }
+};
 
 const sendIndex = (filePath: string) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
   res.sendFile(filePath, (err) => {
@@ -57,14 +84,14 @@ const sendIndex = (filePath: string) => (req: express.Request, res: express.Resp
   });
 };
 
-app.use('/h5', express.static(h5Dir));
-app.use('/admin', express.static(adminDir));
-app.use('/user', express.static(h5Dir));
-app.use('/assets', express.static(path.join(h5Dir, 'assets')));
+app.use('/h5', express.static(h5Dir, staticOptions));
+app.use('/admin', express.static(adminDir, staticOptions));
+app.use('/user', express.static(h5Dir, staticOptions));
+app.use('/assets', express.static(path.join(h5Dir, 'assets'), staticOptions));
 
 // 让 @rocketbird/member-h5 的 tabbar 图标可通过 /static 以及 /user/static 访问
 const h5StaticDir = path.join(h5Dir, 'static');
-app.use(['/static', '/user/static', '/h5/static'], express.static(h5StaticDir));
+app.use(['/static', '/user/static', '/h5/static'], express.static(h5StaticDir, staticOptions));
 
 app.get(['/admin', '/admin/*'], sendIndex(path.join(adminDir, 'index.html')));
 app.get(['/user', '/user/*', '/h5', '/h5/*'], sendIndex(path.join(h5Dir, 'index.html')));
@@ -99,7 +126,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', routes);
 
-app.use('/', express.static(h5Dir));
+app.use('/', express.static(h5Dir, staticOptions));
 
 // 错误处理
 app.use(errorMiddleware);

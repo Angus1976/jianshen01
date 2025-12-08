@@ -1,6 +1,8 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache curl
+ARG BASE_URL=/user/
+ENV BASE_URL=${BASE_URL}
 COPY . .
 RUN yarn install --frozen-lockfile
 RUN yarn run build:shared
@@ -15,6 +17,8 @@ RUN yarn install --production --frozen-lockfile --ignore-scripts
 FROM node:18-alpine AS runtime
 WORKDIR /app
 RUN apk add --no-cache curl tini
+ARG BASE_URL=/user/
+ENV BASE_URL=${BASE_URL}
 ENV NODE_ENV=production
 ENV PORT=8000
 COPY --from=builder /app/package.json ./package.json
@@ -23,6 +27,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/member-h5/dist ./packages/member-h5/dist
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/api/health || exit 1
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "packages/server/dist/app.js"]

@@ -13,6 +13,12 @@
       }
     },
     {
+      "path": "pages/user/index",
+      "style": {
+        "navigationBarTitleText": "路径调试"
+      }
+    },
+    {
       "path": "pages/checkin/index",
       "style": {
         "navigationBarTitleText": "打卡"
@@ -123,26 +129,26 @@
     "list": [
       {
         "pagePath": "pages/home/index",
-        "iconPath": "static/tabbar/home.svg",
-        "selectedIconPath": "static/tabbar/home-active.svg",
+        "iconPath": "/static/tabbar/home.svg",
+        "selectedIconPath": "/static/tabbar/home-active.svg",
         "text": "首页"
       },
       {
         "pagePath": "pages/points/index",
-        "iconPath": "static/tabbar/points.svg",
-        "selectedIconPath": "static/tabbar/points-active.svg",
+        "iconPath": "/static/tabbar/points.svg",
+        "selectedIconPath": "/static/tabbar/points-active.svg",
         "text": "积分"
       },
       {
         "pagePath": "pages/checkin/index",
-        "iconPath": "static/tabbar/checkin.svg",
-        "selectedIconPath": "static/tabbar/checkin-active.svg",
+        "iconPath": "/static/tabbar/checkin.svg",
+        "selectedIconPath": "/static/tabbar/checkin-active.svg",
         "text": "打卡"
       },
       {
         "pagePath": "pages/mine/index",
-        "iconPath": "static/tabbar/mine.svg",
-        "selectedIconPath": "static/tabbar/mine-active.svg",
+        "iconPath": "/static/tabbar/mine.svg",
+        "selectedIconPath": "/static/tabbar/mine-active.svg",
         "text": "我的"
       }
     ]

@@ -7,9 +7,10 @@
   "transformPx": false,
   "h5": {
     "title": "RocketBird会员",
+    "publicPath": "./",
     "router": {
       "mode": "history",
-      "base": "/user"
+      "base": "/user/"
     },
     "optimization": {
       "treeShaking": {
