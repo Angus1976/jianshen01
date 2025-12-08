@@ -19,6 +19,7 @@ import { loggerMiddleware } from './middlewares/logger.middleware';
 import { securityMiddleware } from './middlewares/security.middleware';
 import routes from './routes';
 import { connectDatabase } from './config/database';
+import { ensureDefaultAdmin } from './services/admin-setup.service';
 
 const app = express();
 
@@ -60,6 +61,10 @@ app.use('/h5', express.static(h5Dir));
 app.use('/admin', express.static(adminDir));
 app.use('/user', express.static(h5Dir));
 app.use('/assets', express.static(path.join(h5Dir, 'assets')));
+
+// 让 @rocketbird/member-h5 的 tabbar 图标可通过 /static 以及 /user/static 访问
+const h5StaticDir = path.join(h5Dir, 'static');
+app.use(['/static', '/user/static', '/h5/static'], express.static(h5StaticDir));
 
 app.get(['/admin', '/admin/*'], sendIndex(path.join(adminDir, 'index.html')));
 app.get(['/user', '/user/*', '/h5', '/h5/*'], sendIndex(path.join(h5Dir, 'index.html')));
@@ -116,6 +121,11 @@ async function bootstrap() {
   try {
     await connectDatabase();
     console.log('Database connected');
+    if (process.env.ADMIN_AUTO_SEED !== 'false') {
+      await ensureDefaultAdmin();
+    } else {
+      console.log('⚠️ ADMIN_AUTO_SEED=false，跳过 admin 初始化');
+    }
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

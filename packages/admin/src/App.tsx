@@ -21,7 +21,8 @@ import OperationLogs from '@/pages/system/OperationLogs';
 // 路由守卫
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { token } = useAuthStore();
-  return token ? <>{children}</> : <Navigate to="/login" replace />;
+  const loginPath = `${import.meta.env.BASE_URL}login`;
+  return token ? <>{children}</> : <Navigate to={loginPath} replace />;
 };
 
 function App() {
